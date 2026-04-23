@@ -1,0 +1,46 @@
+
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: classlite
+      POSTGRES_USER: classlite
+      POSTGRES_PASSWORD: classlite
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    depends_on:
+      - db
+    environment:
+      APP_NAME: Class Management Backend
+      DATABASE_URL: postgresql+psycopg://classlite:classlite@db:5432/classlite
+      SECRET_KEY: change-this-secret
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 1440
+      REDIS_URL: redis://redis:6379/0
+      AI_GRADING_ENABLED: "true"
+      AI_PROVIDER: mock
+      AI_MODEL: mock-model
+      AI_GRADING_REVIEW_REQUIRED: "true"
+      SEB_REQUIRED_FOR_FORMAL_EXAMS: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

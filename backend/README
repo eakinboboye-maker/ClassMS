@@ -1,0 +1,346 @@
+# Class Management Backend
+
+Backend for:
+- JupyterLite teaching, in-class quizzes, and mock exams
+- SEB-backed formal exams
+- objective grading
+- fill-gap grading
+- AI-assisted essay grading with human review
+
+## Structure
+
+```text
+backend/
+  app/
+    main.py
+    core/
+    models/
+    schemas/
+    api/
+    services/
+    workers/
+  migrations/
+  tests/
+  
+  
+## Bulk roster import
+
+Endpoint:
+```bash id="2i7i7x"
+POST /api/users/bulk-import
+Payload:
+
+{
+  "users": [
+    {
+      "email": "student1@example.com",
+      "full_name": "Student One",
+      "matric_no": "MAT001",
+      "role": "student"
+    }
+  ],
+  "default_password": "welcome123",
+  "skip_existing": true
+}
+Attendance
+
+Create attendance session:
+
+POST /api/courses/attendance/sessions
+
+Mark attendance:
+
+POST /api/courses/attendance/mark
+Live attempt monitoring
+
+List attempts for an assessment:
+
+GET /api/admin/assessments/{assessment_id}/attempts
+
+Live SEB session monitor:
+
+GET /api/admin/assessments/{assessment_id}/live-monitor
+AI grading worker
+
+Run one job:
+
+python -m app.workers.grading_jobs --job-id 1
+
+Run pending jobs:
+
+python -m app.workers.grading_jobs --pending --limit 20
+Blueprint-based assessment assembly
+
+This allows you to build an assessment from rules such as:
+
+question type
+difficulty
+topic
+count
+
+Current implementation selects deterministic rows ordered by question id.
+You can later upgrade it to random selection, weighted selection, or blueprint balancing.
+
+
+---
+
+# `backend/Makefile`  
+Append this worker target.
+
+```make id="3ni3j8"
+worker:
+	python -m app.workers.grading_jobs --pending --limit 20
+
+
+
+
+## Question bank JSON import/export
+
+Import:
+```bash id="27q5xp"
+POST /api/questions/import
+
+Export:
+
+GET /api/questions/export
+Grade publication
+
+Publish grades for an assessment:
+
+POST /api/grading/assessments/{assessment_id}/publish
+
+View gradebook:
+
+GET /api/grading/assessments/{assessment_id}/gradebook
+
+Student view of published grade:
+
+GET /api/grading/my-grades/{assessment_id}
+Attempt expiry auto-submit
+
+Run expiry check:
+
+python -m app.workers.grading_jobs --expiry-check
+
+Run expiry check only for formal exams:
+
+python -m app.workers.grading_jobs --expiry-check --assessment-type formal
+
+---
+
+# `backend/Makefile`  
+Append this target.
+
+
+## Seed initial data
+
+```bash id="pcd93d"
+python seed_data.py
+Management helper
+
+Run server:
+
+python manage.py runserver
+
+Run migrations:
+
+python manage.py migrate
+
+Run tests:
+
+python manage.py test
+
+Seed demo data:
+
+python manage.py seed
+
+Run grading worker:
+
+python manage.py worker
+
+Run expiry auto-submit:
+
+python manage.py expiry
+
+```make id="3u52zu"
+expiry:
+	python -m app.workers.grading_jobs --expiry-check
+	
+	
+	
+## CSV/XLSX roster parsing helpers
+
+Parse CSV content:
+```bash id="h1za5r"
+POST /api/users/parse-csv
+
+Parse XLSX-like rows already converted to JSON:
+
+POST /api/users/parse-xlsx-rows
+
+Filtered gradebook
+GET /api/grading/gradebook?course_id=1&section_id=2&published_only=true
+
+Essay review UI payloads
+GET /api/grading/reviews/essay-items
+
+Incident dashboard filters
+
+
+Append these notes.
+
+## Frontend contract
+
+See:
+```text id="k12x2o"
+docs/frontend_contract.md
+Incident audit exports
+
+JSON:
+
+GET /api/admin/incidents/export.json
+
+CSV:
+
+GET /api/admin/incidents/export.csv
+Analytics endpoints
+
+Section analytics:
+
+GET /api/grading/analytics/section/{section_id}
+
+Course analytics:
+
+GET /api/grading/analytics/course/{course_id}
+Docker
+
+Build and run:
+
+docker compose up --build
+
+This will start:
+
+PostgreSQL
+Redis
+FastAPI backend
+
+---
+
+# `backend/Makefile`
+
+Append these Docker targets.
+
+```make id="o9y1oi"
+docker-up:
+	docker compose up --build
+
+docker-down:
+	docker compose down
+	
+	
+## Demo seed data
+
+Load richer demo fixtures:
+```bash id="8s28lh"
+python seed_demo_data.py
+
+This seeds:
+
+admin
+instructor
+two demo students
+one course and section
+a mock exam
+a formal exam
+objective, fill-gap, and essay questions
+a demo approved SEB config hash
+Frontend API client starter
+
+See:
+
+frontend_api_client.ts
+
+This file is a minimal typed contract example for a React/Next frontend.
+
+Worker supervision
+
+Simple loop:
+
+bash supervisor_worker.sh
+
+Cron examples:
+
+cron_expiry_example.txt
+CI workflows
+
+GitHub Actions workflow files:
+
+.github/workflows/backend-ci.yml
+.github/workflows/docker-build.yml
+
+---
+
+# `backend/tests/test_demo_seed_imports.py`
+
+Create this new test file.
+
+```python id="u8v5hj"
+def test_demo_seed_module_import():
+    import seed_demo_data  # noqa: F401
+    assert True
+    
+    
+## JupyterLite mock-exam widget contract
+
+See:
+```text id="17272"
+docs/jupyterlite_mock_exam_widget_contract.md
+
+Production deployment checklist
+
+See:
+
+docs/production_deployment_checklist.md
+Frontend apps
+
+Suggested frontend structure:
+
+frontend/
+  teacher-dashboard/
+  exam-client/
+  shared/
+
+Teacher dashboard dev:
+
+cd frontend/teacher-dashboard
+npm install
+npm run dev
+
+Formal exam client dev:
+
+cd frontend/exam-client
+npm install
+npm run dev
+
+
+## Additional frontend scaffolds
+
+Teacher essay review page:
+```text
+../frontend/teacher-dashboard/app/essay-reviews/page.tsx
+
+Formal exam runner page:
+
+../frontend/exam-client/app/formal-runner/page.tsx
+
+JupyterLite widget examples:
+
+../frontend/shared/jupyterlite_mock_widget_example.py
+../frontend/shared/jupyterlite_mock_widget_example.js
+
+OpenAI integration design note:
+
+docs/openai_integration_stub.md
+GET /api/admin/incidents/dashboard?assessment_id=1&incident_type=replay_or_invalid_session
+
+

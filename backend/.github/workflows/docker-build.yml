@@ -1,0 +1,29 @@
+name: docker-build
+
+on:
+  push:
+    paths:
+      - "backend/Dockerfile"
+      - "backend/docker-compose.yml"
+      - "backend/requirements.txt"
+      - "backend/app/**"
+  pull_request:
+    paths:
+      - "backend/Dockerfile"
+      - "backend/docker-compose.yml"
+      - "backend/requirements.txt"
+      - "backend/app/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t classlite-backend .

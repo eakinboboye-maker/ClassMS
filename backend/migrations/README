@@ -1,0 +1,10 @@
+Use Alembic to manage database schema changes.
+
+Create a migration:
+alembic revision --autogenerate -m "message"
+
+Apply latest migrations:
+alembic upgrade head
+
+Rollback one migration:
+alembic downgrade -1

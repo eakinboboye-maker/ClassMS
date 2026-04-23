@@ -1,0 +1,5 @@
+# Run expiry auto-submit every minute
+* * * * * cd /path/to/backend && /usr/bin/python -m app.workers.grading_jobs --expiry-check >> expiry.log 2>&1
+
+# Run pending AI grading every minute
+* * * * * cd /path/to/backend && /usr/bin/python -m app.workers.grading_jobs --pending --limit 20 >> grading.log 2>&1

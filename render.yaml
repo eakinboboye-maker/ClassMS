@@ -1,0 +1,86 @@
+databases:
+  - name: classlite-db
+    plan: starter
+
+services:
+  - type: web
+    name: classlite-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    preDeployCommand: alembic upgrade head
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: classlite-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 1440
+      - key: AI_PROVIDER
+        value: mock
+      - key: AI_MODEL
+        value: gpt-5
+      - key: AI_GRADING_ENABLED
+        value: true
+      - key: AI_GRADING_REVIEW_REQUIRED
+        value: true
+      - key: SEB_REQUIRED_FOR_FORMAL_EXAMS
+        value: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+  - type: worker
+    name: classlite-worker
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash supervisor_worker.sh
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: classlite-db
+          property: connectionString
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: classlite-backend
+          envVarKey: SECRET_KEY
+      - key: ALGORITHM
+        value: HS256
+      - key: AI_PROVIDER
+        fromService:
+          type: web
+          name: classlite-backend
+          envVarKey: AI_PROVIDER
+      - key: AI_MODEL
+        fromService:
+          type: web
+          name: classlite-backend
+          envVarKey: AI_MODEL
+      - key: OPENAI_API_KEY
+        sync: false
+  - type: cron
+    name: classlite-expiry
+    runtime: python
+    rootDir: backend
+    schedule: "*/2 * * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m app.workers.grading_jobs --expiry-check
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: classlite-db
+          property: connectionString
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: classlite-backend
+          envVarKey: SECRET_KEY
+      - key: ALGORITHM
+        value: HS256
