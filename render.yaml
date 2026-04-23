@@ -1,6 +1,6 @@
 databases:
   - name: classlite-db
-    plan: basic-256mb
+    plan: free
     diskSizeGB: 15
     storageAutoscalingEnabled: true
 
