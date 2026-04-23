@@ -1,7 +1,7 @@
 """add admin/analytics/export support
 
 Revision ID: 0003_admin_analytics_and_exports
-Revises: 0002_grade_publications_and_exam_tokens
+Revises: 0002_grade_pub_examtok
 Create Date: 2026-04-20 00:15:00
 """
 from alembic import op
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 
 
 revision = "0003_admin_analytics_and_exports"
-down_revision = "0002_grade_publications_and_exam_tokens"
+down_revision = "0002_grade_pub_examtok"
 branch_labels = None
 depends_on = None
 
