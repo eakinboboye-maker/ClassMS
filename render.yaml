@@ -1,8 +1,8 @@
 databases:
   - name: classlite-db
     plan: free
-    diskSizeGB: 15
-    storageAutoscalingEnabled: true
+    #diskSizeGB: 15
+    #storageAutoscalingEnabled: true
 
 services:
   - type: web
