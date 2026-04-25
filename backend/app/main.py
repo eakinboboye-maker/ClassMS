@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import auth, users, courses, questions, mock_exams, formal_exams, grading, admin, health
 from app.core.config import settings
+import os
 
 app = FastAPI(title=settings.APP_NAME)
 
