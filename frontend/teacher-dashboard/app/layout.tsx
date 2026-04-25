@@ -1,20 +1,15 @@
 import React from "react";
+import "./globals.css";
 
 export const metadata = {
-  title: "Teacher Dashboard",
-  description: "Class management teacher dashboard",
+  title: "ClassLite Teacher Dashboard",
+  description: "Teacher dashboard for ClassLite",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ fontFamily: "Arial, sans-serif", margin: 0, background: "#f7f7f7" }}>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

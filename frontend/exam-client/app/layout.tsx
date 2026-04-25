@@ -1,20 +1,11 @@
 import React from "react";
+import "./globals.css";
 
 export const metadata = {
-  title: "Formal Exam Client",
-  description: "SEB-backed formal exam client",
+  title: "ClassLite Formal Exam",
+  description: "Secure formal exam client",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body style={{ fontFamily: "Arial, sans-serif", margin: 0, background: "#f5f5f5" }}>
-        {children}
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return <html lang="en"><body>{children}</body></html>;
 }
