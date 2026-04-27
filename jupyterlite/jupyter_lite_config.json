@@ -1,0 +1,9 @@
+{
+  "LiteBuildConfig": {
+    "contents": ["content"],
+    "output_dir": "dist",
+    "apps": ["lab", "retro"],
+    "federated_extensions": [],
+    "settings_overrides": ["overrides.json"]
+  }
+}
