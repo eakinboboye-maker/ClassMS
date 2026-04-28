@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import auth, users, courses, questions, mock_exams, formal_exams, grading, admin, health
 from app.core.config import settings
+from app.api import jupyterlite
 import os
 
 app = FastAPI(title=settings.APP_NAME)
@@ -27,3 +28,4 @@ app.include_router(mock_exams.router, prefix="/api/mock-exams", tags=["mock-exam
 app.include_router(formal_exams.router, prefix="/api/formal-exams", tags=["formal-exams"])
 app.include_router(grading.router, prefix="/api/grading", tags=["grading"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+app.include_router(jupyterlite.router, prefix="/api/jupyterlite", tags=["jupyterlite"])

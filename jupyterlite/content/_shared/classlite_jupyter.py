@@ -6,13 +6,21 @@ from IPython.display import display, clear_output
 
 
 class ClassLiteLesson:
-    def __init__(self, api_base: str, assessment_id: int, attendance_session_id: int, lesson_slug: str):
+    def __init__(self, api_base: str, lesson_slug: str):
         self.api_base = api_base.rstrip("/")
-        self.assessment_id = assessment_id
-        self.attendance_session_id = attendance_session_id
         self.lesson_slug = lesson_slug
+
         self.student_token = None
         self.current_user = None
+
+        self.config = None
+        self.assessment_id = None
+        self.attendance_session_id = None
+        self.question_keys = {}
+        self.title = None
+        self.course_code = None
+        self.notebook_path = None
+
         self.attempt_info = None
         self.paper = None
         self.answers = {}
@@ -85,8 +93,34 @@ class ClassLiteLesson:
         login_button.on_click(_login)
         display(widgets.VBox([email_input, password_input, login_button, out]))
 
+    def load_lesson_config(self):
+        requests = self._require_requests()
+
+        r = requests.get(
+            f"{self.api_base}/api/jupyterlite/lesson-config/{self.lesson_slug}",
+            headers=self.headers,
+            timeout=30,
+        )
+        r.raise_for_status()
+
+        self.config = r.json()
+        self.assessment_id = self.config["assessment_id"]
+        self.attendance_session_id = self.config["attendance_session_id"]
+        self.question_keys = self.config.get("question_keys", {})
+        self.title = self.config.get("title")
+        self.course_code = self.config.get("course_code")
+        self.notebook_path = self.config.get("notebook_path")
+        return self.config
+
+    def qid(self, key: str) -> int:
+        if key not in self.question_keys:
+            raise KeyError(f"Question key not found in lesson config: {key}")
+        return self.question_keys[key]
+
     def start_attempt(self):
         requests = self._require_requests()
+        if self.assessment_id is None:
+            raise ValueError("Load lesson config first.")
         r = requests.post(
             f"{self.api_base}/api/mock-exams/{self.assessment_id}/start",
             headers=self.headers,
@@ -98,6 +132,8 @@ class ClassLiteLesson:
 
     def fetch_paper(self):
         requests = self._require_requests()
+        if self.assessment_id is None:
+            raise ValueError("Load lesson config first.")
         r = requests.get(
             f"{self.api_base}/api/mock-exams/{self.assessment_id}/paper",
             headers=self.headers,
@@ -107,34 +143,32 @@ class ClassLiteLesson:
         self.paper = r.json()
         return self.paper
 
-    def answer_mcq(self, question_id, selected_option):
-        self.answers[question_id] = {"selected_option": selected_option}
-        return self.answers[question_id]
+    def answer_mcq(self, question_key, selected_option):
+        self.answers[self.qid(question_key)] = {"selected_option": selected_option}
+        return self.answers[self.qid(question_key)]
 
-    def answer_multi(self, question_id, selected_options):
-        self.answers[question_id] = {"selected_options": selected_options}
-        return self.answers[question_id]
+    def answer_multi(self, question_key, selected_options):
+        self.answers[self.qid(question_key)] = {"selected_options": selected_options}
+        return self.answers[self.qid(question_key)]
 
-    def answer_fill_gap(self, question_id, gaps):
-        self.answers[question_id] = {"gaps": gaps}
-        return self.answers[question_id]
+    def answer_fill_gap(self, question_key, gaps):
+        self.answers[self.qid(question_key)] = {"gaps": gaps}
+        return self.answers[self.qid(question_key)]
 
-    def answer_essay(self, question_id, answer_text):
-        self.answers[question_id] = {"answer_text": answer_text}
-        return self.answers[question_id]
+    def answer_essay(self, question_key, answer_text):
+        self.answers[self.qid(question_key)] = {"answer_text": answer_text}
+        return self.answers[self.qid(question_key)]
 
     def autosave(self):
         requests = self._require_requests()
         if not self.attempt_info:
             raise ValueError("Start attempt first.")
-
         payload = {
             "responses": [
                 {"question_id": qid, "response": resp}
                 for qid, resp in self.answers.items()
             ]
         }
-
         r = requests.post(
             f"{self.api_base}/api/mock-exams/attempts/{self.attempt_info['attempt_id']}/autosave",
             headers=self.headers,
@@ -146,11 +180,9 @@ class ClassLiteLesson:
 
     def mark_attendance(self):
         requests = self._require_requests()
-        payload = {
-            "attendance_session_id": self.attendance_session_id,
-            "status": "present",
-        }
-
+        if self.attendance_session_id is None:
+            raise ValueError("Load lesson config first.")
+        payload = {"attendance_session_id": self.attendance_session_id, "status": "present"}
         r = requests.post(
             f"{self.api_base}/api/courses/attendance/mark",
             headers=self.headers,
@@ -164,7 +196,6 @@ class ClassLiteLesson:
         requests = self._require_requests()
         if not self.attempt_info:
             raise ValueError("Start attempt first.")
-
         submitted_payload = {
             "lesson": self.lesson_slug,
             "submitted_from": "jupyterlite",
@@ -172,7 +203,6 @@ class ClassLiteLesson:
             "attendance_session_id": self.attendance_session_id,
             "done": True,
         }
-
         r = requests.post(
             f"{self.api_base}/api/mock-exams/attempts/{self.attempt_info['attempt_id']}/submit",
             headers=self.headers,
@@ -186,7 +216,6 @@ class ClassLiteLesson:
         requests = self._require_requests()
         if not self.attempt_info:
             raise ValueError("Start attempt first.")
-
         r = requests.get(
             f"{self.api_base}/api/mock-exams/attempts/{self.attempt_info['attempt_id']}/scores",
             headers=self.headers,

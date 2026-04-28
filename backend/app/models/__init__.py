@@ -12,6 +12,7 @@ from .security_exam import (
     IncidentLog,
 )
 from .attendance import AttendanceSession, AttendanceRecord
+from .jupyterlite import LessonLaunchConfig
 
 __all__ = [
     "User",
@@ -41,4 +42,5 @@ __all__ = [
     "IncidentLog",
     "AttendanceSession",
     "AttendanceRecord",
+    "LessonLaunchConfig",
 ]

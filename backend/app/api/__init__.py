@@ -1,4 +1,5 @@
 from . import auth, users, courses, questions, mock_exams, formal_exams, grading, admin, health
+from . import jupyterlite
 
 __all__ = [
     "auth",
@@ -10,4 +11,5 @@ __all__ = [
     "grading",
     "admin",
     "health",
+    "jupyterlite",
 ]

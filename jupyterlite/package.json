@@ -1,0 +1,14 @@
+{
+  "name": "classlite-jupyterlite-site",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "jupyter lite build --config jupyter_lite_config.json --output-dir dist",
+    "serve": "python -m http.server 9000 -d dist",
+    "clean": "rm -rf dist .jupyterlite.doit.db",
+    "rebuild": "npm run clean && npm run build",
+    "sync-content": "python scripts/sync_course_content.py"
+  }
+}
+
+
