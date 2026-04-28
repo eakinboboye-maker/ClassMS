@@ -1,0 +1,196 @@
+import json
+from datetime import datetime
+
+import ipywidgets as widgets
+from IPython.display import display, clear_output
+
+
+class ClassLiteLesson:
+    def __init__(self, api_base: str, assessment_id: int, attendance_session_id: int, lesson_slug: str):
+        self.api_base = api_base.rstrip("/")
+        self.assessment_id = assessment_id
+        self.attendance_session_id = attendance_session_id
+        self.lesson_slug = lesson_slug
+        self.student_token = None
+        self.current_user = None
+        self.attempt_info = None
+        self.paper = None
+        self.answers = {}
+
+    @property
+    def headers(self):
+        if not self.student_token:
+            raise ValueError("Student token not available. Log in first.")
+        return {
+            "Authorization": f"Bearer {self.student_token}",
+            "Content-Type": "application/json",
+        }
+
+    def _require_requests(self):
+        try:
+            import requests
+            return requests
+        except Exception as exc:
+            raise RuntimeError(
+                "The Xeus kernel could not import requests. "
+                "Add requests to environment.yml and rebuild the JupyterLite site."
+            ) from exc
+
+    def login_widget(self):
+        requests = self._require_requests()
+
+        email_input = widgets.Text(
+            description="Email:",
+            placeholder="student@example.com",
+            layout=widgets.Layout(width="420px"),
+        )
+        password_input = widgets.Password(
+            description="Password:",
+            placeholder="Enter password",
+            layout=widgets.Layout(width="420px"),
+        )
+        login_button = widgets.Button(description="Login", button_style="primary")
+        out = widgets.Output()
+
+        def _login(_):
+            with out:
+                clear_output()
+                try:
+                    r = requests.post(
+                        f"{self.api_base}/api/auth/login",
+                        json={
+                            "email": email_input.value.strip(),
+                            "password": password_input.value,
+                        },
+                        timeout=30,
+                    )
+                    r.raise_for_status()
+                    data = r.json()
+                    self.student_token = data["access_token"]
+
+                    r2 = requests.get(
+                        f"{self.api_base}/api/auth/me",
+                        headers=self.headers,
+                        timeout=30,
+                    )
+                    r2.raise_for_status()
+                    self.current_user = r2.json()
+
+                    print(f"Logged in as {self.current_user['full_name']} ({self.current_user['email']})")
+                except Exception as exc:
+                    self.student_token = None
+                    self.current_user = None
+                    print(f"Login failed: {exc}")
+
+        login_button.on_click(_login)
+        display(widgets.VBox([email_input, password_input, login_button, out]))
+
+    def start_attempt(self):
+        requests = self._require_requests()
+        r = requests.post(
+            f"{self.api_base}/api/mock-exams/{self.assessment_id}/start",
+            headers=self.headers,
+            timeout=30,
+        )
+        r.raise_for_status()
+        self.attempt_info = r.json()
+        return self.attempt_info
+
+    def fetch_paper(self):
+        requests = self._require_requests()
+        r = requests.get(
+            f"{self.api_base}/api/mock-exams/{self.assessment_id}/paper",
+            headers=self.headers,
+            timeout=30,
+        )
+        r.raise_for_status()
+        self.paper = r.json()
+        return self.paper
+
+    def answer_mcq(self, question_id, selected_option):
+        self.answers[question_id] = {"selected_option": selected_option}
+        return self.answers[question_id]
+
+    def answer_multi(self, question_id, selected_options):
+        self.answers[question_id] = {"selected_options": selected_options}
+        return self.answers[question_id]
+
+    def answer_fill_gap(self, question_id, gaps):
+        self.answers[question_id] = {"gaps": gaps}
+        return self.answers[question_id]
+
+    def answer_essay(self, question_id, answer_text):
+        self.answers[question_id] = {"answer_text": answer_text}
+        return self.answers[question_id]
+
+    def autosave(self):
+        requests = self._require_requests()
+        if not self.attempt_info:
+            raise ValueError("Start attempt first.")
+
+        payload = {
+            "responses": [
+                {"question_id": qid, "response": resp}
+                for qid, resp in self.answers.items()
+            ]
+        }
+
+        r = requests.post(
+            f"{self.api_base}/api/mock-exams/attempts/{self.attempt_info['attempt_id']}/autosave",
+            headers=self.headers,
+            data=json.dumps(payload),
+            timeout=30,
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def mark_attendance(self):
+        requests = self._require_requests()
+        payload = {
+            "attendance_session_id": self.attendance_session_id,
+            "status": "present",
+        }
+
+        r = requests.post(
+            f"{self.api_base}/api/courses/attendance/mark",
+            headers=self.headers,
+            data=json.dumps(payload),
+            timeout=30,
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def submit(self):
+        requests = self._require_requests()
+        if not self.attempt_info:
+            raise ValueError("Start attempt first.")
+
+        submitted_payload = {
+            "lesson": self.lesson_slug,
+            "submitted_from": "jupyterlite",
+            "submitted_at": datetime.utcnow().isoformat(),
+            "attendance_session_id": self.attendance_session_id,
+            "done": True,
+        }
+
+        r = requests.post(
+            f"{self.api_base}/api/mock-exams/attempts/{self.attempt_info['attempt_id']}/submit",
+            headers=self.headers,
+            data=json.dumps({"submitted_payload": submitted_payload}),
+            timeout=30,
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def scores(self):
+        requests = self._require_requests()
+        if not self.attempt_info:
+            raise ValueError("Start attempt first.")
+
+        r = requests.get(
+            f"{self.api_base}/api/mock-exams/attempts/{self.attempt_info['attempt_id']}/scores",
+            headers=self.headers,
+            timeout=30,
+        )
+        r.raise_for_status()
+        return r.json()

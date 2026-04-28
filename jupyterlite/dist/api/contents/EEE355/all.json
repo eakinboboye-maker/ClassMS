@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-04-27T18:30:45.172407Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-04-27T17:18:06Z",
+      "mimetype": null,
+      "name": "week01_class_note_xeus_fixed.ipynb",
+      "path": "EEE355/week01_class_note_xeus_fixed.ipynb",
+      "size": 4680,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-04-27T18:30:45.172407Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-04-27T18:30:45.172407Z",
+  "mimetype": null,
+  "name": "EEE355",
+  "path": "EEE355",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}

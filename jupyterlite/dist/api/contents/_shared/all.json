@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-04-27T18:30:45.172407Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-04-27T17:18:06Z",
+      "mimetype": "text/x-python",
+      "name": "classlite_jupyter.py",
+      "path": "_shared/classlite_jupyter.py",
+      "size": 6574,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2026-04-27T18:30:45.172407Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-04-27T18:30:45.172407Z",
+  "mimetype": null,
+  "name": "_shared",
+  "path": "_shared",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
