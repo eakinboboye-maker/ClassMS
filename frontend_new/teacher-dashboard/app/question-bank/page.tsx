@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "../../lib/imports-api";
+import { apiFetch } from "../../lib/api";
 
 export default function QuestionBankPage() {
   const [token, setToken] = useState("");
@@ -39,54 +39,48 @@ export default function QuestionBankPage() {
   }
 
   return (
-    <main style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <h1>Question Bank Upload</h1>
-
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
-        <label>Teacher access token</label>
-        <input
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          placeholder="Paste teacher JWT"
-          style={{ width: "100%", marginTop: 8 }}
-        />
+    <main>
+      <div className="card">
+        <h1>Question Bank Upload</h1>
+        <p className="muted">Paste parser text or mixed CSV, preview, then publish.</p>
       </div>
 
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
-        <div style={{ marginBottom: 12 }}>
+      <div className="card">
+        <label>Teacher access token</label>
+        <input value={token} onChange={(e) => setToken(e.target.value)} placeholder="Paste teacher JWT" style={{ marginTop: 8 }} />
+      </div>
+
+      <div className="card">
+        <div className="row" style={{ marginBottom: 12 }}>
           <button onClick={() => setMode("text")} disabled={mode === "text"}>Parser Text</button>
-          <button onClick={() => setMode("csv")} disabled={mode === "csv"} style={{ marginLeft: 8 }}>Mixed CSV</button>
+          <button onClick={() => setMode("csv")} disabled={mode === "csv"}>Mixed CSV</button>
         </div>
 
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={mode === "text" ? "Paste question_template.txt content here" : "Paste mixed_question_bank_template.csv content here"}
-          style={{ width: "100%", minHeight: 260 }}
+          style={{ minHeight: 260 }}
         />
 
-        <div style={{ marginTop: 12 }}>
+        <div className="row" style={{ marginTop: 12 }}>
           <button onClick={parseQuestions}>Parse</button>
-          <button onClick={publishQuestions} disabled={preview.length === 0} style={{ marginLeft: 8 }}>
-            Publish Parsed Questions
-          </button>
+          <button onClick={publishQuestions} disabled={preview.length === 0}>Publish Parsed Questions</button>
         </div>
       </div>
 
       {warnings.length > 0 && (
-        <div style={{ background: "#fff7ed", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+        <div className="card">
           <h3>Warnings</h3>
-          <ul>
-            {warnings.map((w, i) => <li key={i}>{w}</li>)}
-          </ul>
+          <ul>{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
         </div>
       )}
 
       {preview.length > 0 && (
-        <div style={{ background: "#fff", padding: 16, borderRadius: 12 }}>
+        <div className="card">
           <h2>Preview</h2>
           {preview.map((item, i) => (
-            <div key={i} style={{ border: "1px solid #ddd", padding: 12, borderRadius: 10, marginBottom: 12 }}>
+            <div key={i} className="card">
               <div><b>Type:</b> {item.type}</div>
               <div><b>Prompt:</b> {item.prompt_md}</div>
               <div><b>Topics:</b> {(item.topics || []).join(", ")}</div>
@@ -95,9 +89,7 @@ export default function QuestionBankPage() {
               {(item.options || []).length > 0 && (
                 <ul>
                   {item.options.map((opt: any, j: number) => (
-                    <li key={j}>
-                      {opt.option_key}. {opt.text} {opt.is_correct ? "✅" : ""}
-                    </li>
+                    <li key={j}>{opt.option_key}. {opt.text} {opt.is_correct ? "✅" : ""}</li>
                   ))}
                 </ul>
               )}

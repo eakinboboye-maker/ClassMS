@@ -1,0 +1,13 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f6f7fb; color: #111827; }
+main { max-width: 1000px; margin: 0 auto; padding: 24px; }
+.card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid #e5e7eb; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+input, textarea, button { font: inherit; }
+input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; background: white; }
+button { padding: 10px 14px; border: 0; border-radius: 10px; background: #2563eb; color: white; cursor: pointer; }
+button[disabled] { opacity: 0.5; cursor: not-allowed; }
+.question { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; background: white; }
+.muted { color: #6b7280; }
+.progress { height: 10px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+.progress > div { height: 10px; background: #2563eb; }

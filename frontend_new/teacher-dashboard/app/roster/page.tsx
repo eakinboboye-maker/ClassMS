@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "../../lib/imports-api";
+import { apiFetch } from "../../lib/api";
 
 export default function RosterPage() {
   const [token, setToken] = useState("");
   const [usersCsv, setUsersCsv] = useState("");
   const [usersPreview, setUsersPreview] = useState<any[]>([]);
-  const [enrollmentJson, setEnrollmentJson] = useState(`[{"Reg No.":"EEE/2026/001","Course Code":"EEE355","Section":"A","Session":"2026/2027"}]`);
+  const [enrollmentJson, setEnrollmentJson] = useState('[{"Reg No.":"EEE/2026/001","Course Code":"EEE355","Section":"A","Session":"2026/2027"}]');
   const [enrollmentPreview, setEnrollmentPreview] = useState<any[]>([]);
   const [status, setStatus] = useState("");
 
@@ -67,51 +67,35 @@ export default function RosterPage() {
   }
 
   return (
-    <main style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <h1>Roster Import</h1>
+    <main>
+      <div className="card">
+        <h1>Roster Import</h1>
+        <p className="muted">Parse student users, create accounts, then publish enrollments.</p>
+      </div>
 
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+      <div className="card">
         <label>Teacher access token</label>
-        <input
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          placeholder="Paste teacher JWT"
-          style={{ width: "100%", marginTop: 8 }}
-        />
+        <input value={token} onChange={(e) => setToken(e.target.value)} placeholder="Paste teacher JWT" style={{ marginTop: 8 }} />
       </div>
 
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+      <div className="card">
         <h2>1. Parse Student Users CSV</h2>
-        <textarea
-          value={usersCsv}
-          onChange={(e) => setUsersCsv(e.target.value)}
-          placeholder="Paste student_users_template.csv content here"
-          style={{ width: '100%', minHeight: 220 }}
-        />
-        <div style={{ marginTop: 12 }}>
+        <textarea value={usersCsv} onChange={(e) => setUsersCsv(e.target.value)} placeholder="Paste student_users_template.csv content here" style={{ minHeight: 220 }} />
+        <div className="row" style={{ marginTop: 12 }}>
           <button onClick={parseUsers}>Parse Users</button>
-          <button onClick={createUsers} disabled={usersPreview.length === 0} style={{ marginLeft: 8 }}>Create / Update Users</button>
+          <button onClick={createUsers} disabled={usersPreview.length === 0}>Create / Update Users</button>
         </div>
-        {usersPreview.length > 0 && (
-          <pre style={{ marginTop: 12, whiteSpace: 'pre-wrap' }}>{JSON.stringify(usersPreview, null, 2)}</pre>
-        )}
+        {usersPreview.length > 0 && <pre>{JSON.stringify(usersPreview, null, 2)}</pre>}
       </div>
 
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+      <div className="card">
         <h2>2. Parse Course Enrollment Rows</h2>
-        <textarea
-          value={enrollmentJson}
-          onChange={(e) => setEnrollmentJson(e.target.value)}
-          placeholder='Paste JSON rows converted from course_enrollment_template.csv'
-          style={{ width: '100%', minHeight: 220 }}
-        />
-        <div style={{ marginTop: 12 }}>
+        <textarea value={enrollmentJson} onChange={(e) => setEnrollmentJson(e.target.value)} placeholder='Paste JSON rows converted from course_enrollment_template.csv' style={{ minHeight: 220 }} />
+        <div className="row" style={{ marginTop: 12 }}>
           <button onClick={parseEnrollment}>Parse Enrollment</button>
-          <button onClick={publishEnrollment} disabled={enrollmentPreview.length === 0} style={{ marginLeft: 8 }}>Enroll into Section</button>
+          <button onClick={publishEnrollment} disabled={enrollmentPreview.length === 0}>Enroll into Section</button>
         </div>
-        {enrollmentPreview.length > 0 && (
-          <pre style={{ marginTop: 12, whiteSpace: 'pre-wrap' }}>{JSON.stringify(enrollmentPreview, null, 2)}</pre>
-        )}
+        {enrollmentPreview.length > 0 && <pre>{JSON.stringify(enrollmentPreview, null, 2)}</pre>}
       </div>
 
       <p>{status}</p>
