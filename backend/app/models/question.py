@@ -16,6 +16,8 @@ class Question(Base):
     answer_key_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     grading_mode: Mapped[str | None] = mapped_column(String(50), nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
+    explanation_md: Mapped[str | None] = mapped_column(Text, nullable=True)
+    show_explanation_after_submit: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class QuestionOption(Base):

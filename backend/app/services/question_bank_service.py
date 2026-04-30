@@ -18,6 +18,8 @@ def create_question_from_schema(db: Session, payload: QuestionCreate) -> Questio
         topics_json=json.dumps(payload.topics),
         answer_key_json=json.dumps(answer_key) if answer_key else None,
         grading_mode=payload.grading_mode,
+        explanation_md=payload.explanation_md,
+        show_explanation_after_submit=payload.show_explanation_after_submit,
     )
     db.add(question)
     db.flush()
@@ -78,6 +80,8 @@ def export_question_to_dict(db: Session, question: Question) -> dict:
         "difficulty": question.difficulty,
         "topics": json.loads(question.topics_json) if question.topics_json else [],
         "grading_mode": question.grading_mode,
+        "explanation_md": question.explanation_md,
+        "show_explanation_after_submit": question.show_explanation_after_submit,
         "options": [
             {
                 "option_key": o.option_key,

@@ -205,3 +205,80 @@ def get_mock_exam_scores(
             for s in scores
         ],
     }
+    
+
+@router.get("/attempts/{attempt_id}/results")
+def get_mock_exam_results(
+    attempt_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    attempt = db.get(Attempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Attempt not found")
+
+    scores = db.query(Score).filter(Score.attempt_id == attempt_id).all()
+    score_map = {s.question_id: s for s in scores}
+
+    responses = get_attempt_responses(db, attempt_id)
+    items = []
+
+    for resp in responses:
+        q = db.get(Question, resp.question_id)
+        if not q:
+            continue
+
+        score = score_map.get(q.id)
+        awarded = score.awarded_marks if score else 0.0
+        max_marks = score.max_marks if score else float(q.marks)
+        is_correct = awarded >= max_marks and max_marks > 0
+
+        answer_key = json.loads(q.answer_key_json) if q.answer_key_json else {}
+        correct_answer_summary = None
+
+        if q.type == "mcq_single":
+            options = db.query(QuestionOption).filter(
+                QuestionOption.question_id == q.id,
+                QuestionOption.is_correct.is_(True),
+            ).all()
+            correct_answer_summary = [o.option_key for o in options]
+
+        elif q.type == "mcq_multi":
+            options = db.query(QuestionOption).filter(
+                QuestionOption.question_id == q.id,
+                QuestionOption.is_correct.is_(True),
+            ).all()
+            correct_answer_summary = [o.option_key for o in options]
+
+        elif q.type == "fill_gap":
+            gaps = db.query(QuestionGap).filter(QuestionGap.question_id == q.id).all()
+            gap_summary = {}
+            for gap in gaps:
+                accepted = db.query(AcceptedAnswer).filter(AcceptedAnswer.gap_id == gap.id).all()
+                gap_summary[gap.gap_key] = [a.text for a in accepted]
+            correct_answer_summary = gap_summary
+
+        elif q.type in {"short_answer", "essay"}:
+            correct_answer_summary = answer_key.get("canonical_answer")
+
+        items.append(
+            {
+                "question_id": q.id,
+                "type": q.type,
+                "prompt_md": q.prompt_md,
+                "awarded_marks": awarded,
+                "max_marks": max_marks,
+                "is_correct": is_correct,
+                "grading_method": score.grading_method if score else None,
+                "correct_answer_summary": correct_answer_summary,
+                "show_explanation_after_submit": q.show_explanation_after_submit,
+                "explanation_md": q.explanation_md if q.show_explanation_after_submit else None,
+            }
+        )
+
+    return {
+        "attempt_id": attempt_id,
+        "total_awarded": sum(s.awarded_marks for s in scores),
+        "total_max": sum(s.max_marks for s in scores),
+        "items": items,
+    }

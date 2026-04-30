@@ -30,6 +30,8 @@ class QuestionCreate(BaseModel):
     gaps: list[QuestionGapCreate] = []
     answer_key: dict | None = None
     rubric: list[RubricCriterionCreate] = []
+    explanation_md: str | None = None
+    show_explanation_after_submit: bool = False
 
     @field_validator("type")
     @classmethod
@@ -75,6 +77,8 @@ class QuestionRead(BaseModel):
     difficulty: str | None = None
     topics_json: str | None = None
     grading_mode: str | None = None
+    explanation_md: str | None = None
+    show_explanation_after_submit: bool = False
 
     class Config:
         from_attributes = True

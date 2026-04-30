@@ -157,10 +157,13 @@ class QuizNotebookUI:
         self.autosave_button.on_click(self._autosave_clicked)
         self.submit_button.on_click(self._submit_clicked)
         self.refresh_button.on_click(self._scores_clicked)
+        
+        self.results_button = widgets.Button(description="Show Results", button_style="warning")
+        self.results_button.on_click(self._results_clicked)
 
     def render(self):
         controls = widgets.HBox(
-            [self.autosave_button, self.submit_button, self.refresh_button],
+            [self.autosave_button, self.submit_button, self.refresh_button, self.results_button],
             layout=widgets.Layout(margin="8px 0 16px 0")
         )
         self._update_progress()
@@ -229,3 +232,74 @@ class QuizNotebookUI:
                 print(result)
             except Exception:
                 traceback.print_exc()
+                
+    def _results_clicked(self, _):
+        import traceback
+        with self.output:
+            self.output.clear_output()
+            try:
+                result = self.lesson.results()
+                viewer = QuizResultsUI(result)
+                viewer.render()
+            except Exception:
+                traceback.print_exc()
+                
+     
+                
+class QuizResultsUI:
+    def __init__(self, result_payload: dict):
+        self.result_payload = result_payload
+
+    def render(self):
+        import ipywidgets as widgets
+        from IPython.display import display
+
+        total_awarded = self.result_payload.get("total_awarded", 0)
+        total_max = self.result_payload.get("total_max", 0)
+
+        header = widgets.HTML(
+            f"""
+            <div style="padding:14px; border:1px solid #d1d5db; margin:10px 0; background:#f8fafc;">
+              <div style="font-size:18px; font-weight:700;">Your Score</div>
+              <div style="font-size:16px; margin-top:6px;">{total_awarded} / {total_max}</div>
+            </div>
+            """
+        )
+
+        cards = []
+        for item in self.result_payload.get("items", []):
+            status_color = "#15803d" if item["is_correct"] else "#b91c1c"
+            status_label = "Correct" if item["is_correct"] else "Needs Review / Incorrect"
+
+            explanation_block = ""
+            if item.get("show_explanation_after_submit") and item.get("explanation_md"):
+                explanation_block = f"""
+                <div style="margin-top:10px; padding:10px; background:#f9fafb; border-radius:8px;">
+                  <div style="font-weight:600;">Explanation</div>
+                  <div style="margin-top:6px;">{item['explanation_md']}</div>
+                </div>
+                """
+
+            correct_answer_block = ""
+            if item.get("correct_answer_summary") is not None:
+                correct_answer_block = f"""
+                <div style="margin-top:8px;">
+                  <b>Correct answer:</b> {item['correct_answer_summary']}
+                </div>
+                """
+
+            card = widgets.HTML(
+                f"""
+                <div style="border:1px solid #d1d5db; padding:14px; margin:12px 0; border-radius:10px;">
+                  <div style="font-weight:700;">Question {item['question_id']}</div>
+                  <div style="margin:8px 0;">{item['prompt_md']}</div>
+                  <div style="color:{status_color}; font-weight:600;">{status_label}</div>
+                  <div style="margin-top:6px;">Score: {item['awarded_marks']} / {item['max_marks']}</div>
+                  {correct_answer_block}
+                  {explanation_block}
+                </div>
+                """
+            )
+            cards.append(card)
+
+        display(widgets.VBox([header, *cards]))

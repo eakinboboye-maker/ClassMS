@@ -6,6 +6,9 @@ from app.core.config import settings
 from app.api import jupyterlite
 import os
 
+from app.api import imports
+
+
 app = FastAPI(title=settings.APP_NAME)
 
 raw_origins = os.getenv("CORS_ORIGINS", "")
@@ -29,3 +32,4 @@ app.include_router(formal_exams.router, prefix="/api/formal-exams", tags=["forma
 app.include_router(grading.router, prefix="/api/grading", tags=["grading"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(jupyterlite.router, prefix="/api/jupyterlite", tags=["jupyterlite"])
+app.include_router(imports.router, prefix="/api/imports", tags=["imports"])
