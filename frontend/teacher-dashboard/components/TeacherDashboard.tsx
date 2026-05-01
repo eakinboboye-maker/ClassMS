@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { BackendClient, EssayReviewItem, apiBase } from "../lib/api";
 
-const api = new BackendClient();
+const api = new BackendClient({ baseUrl: apiBase });
 type TabKey = "overview" | "essay" | "gradebook" | "incidents";
 
 export default function TeacherDashboard() {
