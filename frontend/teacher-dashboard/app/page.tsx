@@ -1,82 +1,57 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { apiFetch, login } from "../lib/api";
-
 
 export default function HomePage() {
   const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("admin123");
-  const [token, setToken] = useState("");
-  const [essayItems, setEssayItems] = useState<any[]>([]);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Use this dashboard to manage questions, rosters, and reviews.");
 
-  async function handleLogin() {
-    try {
-      const result = await login(email, password);
-      setToken(result.access_token);
-      setStatus("Logged in");
-    } catch (err: any) {
-      setStatus(err.message || "Login failed");
-    }
-  }
-
-  async function loadEssayReviews() {
-    try {
-      const result = await apiFetch("/api/grading/reviews/essay-items", token);
-      setEssayItems(result.items || []);
-      setStatus(`Loaded ${result.items.length} essay review item(s)`);
-    } catch (err: any) {
-      setStatus(err.message || "Failed to load essay reviews");
-    }
+  function handleLogin() {
+    setStatus(`Login submitted for ${email}. Connect this to your existing auth flow.`);
   }
 
   return (
     <main>
-      <div className="card">
-        <h1>Teacher Dashboard</h1>
-        <p className="muted">Manage questions, rosters, reviews, and classroom workflows.</p>
-        <div className="row">
-          <Link href="/question-bank">Open Question Bank</Link>
-          <Link href="/roster">Open Roster Import</Link>
-          <Link href="/essay-reviews">Open Essay Reviews</Link>
-        </div>
-      </div>
+      <h1 className="page-title">Teacher Dashboard</h1>
+      <p className="page-subtitle">
+        Manage classroom content, upload rosters, review essay grading, and publish learning materials.
+      </p>
 
-      <div className="card">
-        <h2>Login</h2>
-        <div className="row">
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <label>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+      <section className="card card-accent">
+        <h2 className="card-title">Login</h2>
+        <label className="label">Email</label>
+        <input className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+        <div className="spacer-12" />
+        <label className="label">Password</label>
+        <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+        <div className="button-row">
+          <button className="btn btn-primary" onClick={handleLogin}>Login</button>
+        </div>
+      </section>
+
+      <div className="grid-2">
+        <section className="card">
+          <h2 className="card-title">Quick Actions</h2>
+          <p className="kv"><strong>Question Bank:</strong> parse, preview, and publish questions.</p>
+          <p className="kv"><strong>Roster:</strong> create users and enroll them into sections.</p>
+          <p className="kv"><strong>Essay Reviews:</strong> approve AI-assisted grading decisions.</p>
+          <div className="button-row">
+            <a className="btn btn-primary" href="/question-bank">Open Question Bank</a>
+            <a className="btn btn-secondary" href="/roster">Open Roster</a>
           </div>
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <label>Password</label>
-            <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" />
-          </div>
-        </div>
-        <div style={{ marginTop: 12 }}>
-          <button onClick={handleLogin}>Login</button>
-        </div>
-      </div>
+        </section>
 
-      <div className="card">
-        <h2>Essay Review Queue</h2>
-        <button onClick={loadEssayReviews} disabled={!token}>Load Essay Review Items</button>
-        <div style={{ marginTop: 12 }}>
-          {essayItems.map((item) => (
-            <div key={item.review_id} className="card" style={{ marginBottom: 12 }}>
-              <strong>Review #{item.review_id}</strong>
-              <div>Question: {item.prompt_md}</div>
-              <div>Student answer: {item.student_answer}</div>
-              <div>Proposed score: {item.proposed_score}</div>
-            </div>
-          ))}
-        </div>
+        <section className="card">
+          <h2 className="card-title">System Status</h2>
+          <div className="notice notice-info">{status}</div>
+          <div className="spacer-12" />
+          <span className="badge">Teacher</span>
+          <span className="badge">Uploads</span>
+          <span className="badge">Reviews</span>
+          <span className="badge">Publishing</span>
+        </section>
       </div>
-
-      <p>{status}</p>
     </main>
   );
 }

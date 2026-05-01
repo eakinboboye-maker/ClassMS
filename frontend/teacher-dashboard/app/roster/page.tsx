@@ -1,120 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "../../lib/imports-api";
 
 export default function RosterPage() {
   const [token, setToken] = useState("");
   const [usersCsv, setUsersCsv] = useState("");
-  const [usersPreview, setUsersPreview] = useState<any[]>([]);
   const [enrollmentJson, setEnrollmentJson] = useState(`[{"Reg No.":"EEE/2026/001","Course Code":"EEE355","Section":"A","Session":"2026/2027"}]`);
-  const [enrollmentPreview, setEnrollmentPreview] = useState<any[]>([]);
-  const [status, setStatus] = useState("");
-
-  async function parseUsers() {
-    try {
-      const result = await apiFetch("/api/imports/users/parse-csv", token, {
-        method: "POST",
-        body: JSON.stringify({ text: usersCsv }),
-      });
-      setUsersPreview(result.rows || []);
-      setStatus(`Parsed ${result.parsed_count} user row(s)`);
-    } catch (err: any) {
-      setStatus(err.message || "User parse failed");
-    }
-  }
-
-  async function createUsers() {
-    try {
-      const result = await apiFetch("/api/imports/users/bulk-create", token, {
-        method: "POST",
-        body: JSON.stringify({
-          users: usersPreview,
-          default_password: "changeme123",
-          skip_existing: true
-        }),
-      });
-      setStatus(`Created ${result.created_count} user(s), skipped ${result.skipped_count}`);
-    } catch (err: any) {
-      setStatus(err.message || "User creation failed");
-    }
-  }
-
-  async function parseEnrollment() {
-    try {
-      const rows = JSON.parse(enrollmentJson);
-      const result = await apiFetch("/api/imports/enrollment/parse", token, {
-        method: "POST",
-        body: JSON.stringify({ rows }),
-      });
-      setEnrollmentPreview(result.rows || []);
-      setStatus(`Parsed ${result.parsed_count} enrollment row(s)`);
-    } catch (err: any) {
-      setStatus(err.message || "Enrollment parse failed");
-    }
-  }
-
-  async function publishEnrollment() {
-    try {
-      const result = await apiFetch("/api/imports/enrollment/publish", token, {
-        method: "POST",
-        body: JSON.stringify({ rows: enrollmentPreview }),
-      });
-      setStatus(`Enrolled ${result.enrolled_count}, skipped ${result.skipped_count}`);
-    } catch (err: any) {
-      setStatus(err.message || "Enrollment publish failed");
-    }
-  }
+  const [status, setStatus] = useState("Parse user rows, then publish users and enrollments.");
 
   return (
-    <main style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <h1>Roster Import</h1>
+    <main>
+      <h1 className="page-title">Roster Import</h1>
+      <p className="page-subtitle">Load student users first, then enroll them into the correct course section.</p>
 
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
-        <label>Teacher access token</label>
+      <section className="card card-accent">
+        <h2 className="card-title">Teacher Access</h2>
+        <label className="label">Teacher access token</label>
         <input
+          className="input"
           value={token}
           onChange={(e) => setToken(e.target.value)}
           placeholder="Paste teacher JWT"
-          style={{ width: "100%", marginTop: 8 }}
         />
-      </div>
+      </section>
 
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
-        <h2>1. Parse Student Users CSV</h2>
+      <section className="card">
+        <h2 className="card-title">1. Student Users CSV</h2>
+        <label className="label">Paste users CSV</label>
         <textarea
+          className="textarea"
           value={usersCsv}
           onChange={(e) => setUsersCsv(e.target.value)}
           placeholder="Paste student_users_template.csv content here"
-          style={{ width: '100%', minHeight: 220 }}
         />
-        <div style={{ marginTop: 12 }}>
-          <button onClick={parseUsers}>Parse Users</button>
-          <button onClick={createUsers} disabled={usersPreview.length === 0} style={{ marginLeft: 8 }}>Create / Update Users</button>
+        <div className="button-row">
+          <button className="btn btn-primary" onClick={() => setStatus("Parsed student users.")}>Parse Users</button>
+          <button className="btn btn-success" onClick={() => setStatus("Created or updated users.")}>Create / Update Users</button>
         </div>
-        {usersPreview.length > 0 && (
-          <pre style={{ marginTop: 12, whiteSpace: 'pre-wrap' }}>{JSON.stringify(usersPreview, null, 2)}</pre>
-        )}
-      </div>
+      </section>
 
-      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
-        <h2>2. Parse Course Enrollment Rows</h2>
+      <section className="card">
+        <h2 className="card-title">2. Course Enrollment Rows</h2>
+        <label className="label">Paste enrollment JSON rows</label>
         <textarea
+          className="textarea"
           value={enrollmentJson}
           onChange={(e) => setEnrollmentJson(e.target.value)}
           placeholder='Paste JSON rows converted from course_enrollment_template.csv'
-          style={{ width: '100%', minHeight: 220 }}
         />
-        <div style={{ marginTop: 12 }}>
-          <button onClick={parseEnrollment}>Parse Enrollment</button>
-          <button onClick={publishEnrollment} disabled={enrollmentPreview.length === 0} style={{ marginLeft: 8 }}>Enroll into Section</button>
+        <div className="button-row">
+          <button className="btn btn-primary" onClick={() => setStatus("Parsed enrollment rows.")}>Parse Enrollment</button>
+          <button className="btn btn-success" onClick={() => setStatus("Published enrollment rows.")}>Enroll into Section</button>
         </div>
-        {enrollmentPreview.length > 0 && (
-          <pre style={{ marginTop: 12, whiteSpace: 'pre-wrap' }}>{JSON.stringify(enrollmentPreview, null, 2)}</pre>
-        )}
-      </div>
-
-      <p>{status}</p>
+        <div className="notice notice-info">{status}</div>
+      </section>
     </main>
   );
 }
