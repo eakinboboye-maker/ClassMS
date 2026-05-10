@@ -8,7 +8,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision = "0005_expand_lesson_launch_configs_for_portal"
+revision = "0005_portal_cfg"
 down_revision = "0004_lesson_launch_configs"
 branch_labels = None
 depends_on = None
