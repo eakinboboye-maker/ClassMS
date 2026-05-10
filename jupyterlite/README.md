@@ -1,22 +1,14 @@
-# Xeus-fixed JupyterLite files
+# ClassLite JupyterLite Portal Upgrade
 
-Use these files to replace the broken Xeus/Pyodide-mixed version.
+This upgrade moves these features from notebooks to the portal:
+- login
+- lesson access by teacher lesson config
+- attendance marking
+- attendance window enforcement
+- student performance over time
+- portal mock exam flow
 
-## Replace
-- `content/_shared/classlite_jupyter.py`
-- `content/EEE355/week01_class_note_xeus_fixed.ipynb`
-- `requirements.txt`
-- `environment.yml`
+Lesson quizzes remain inside notebooks.
 
-## Build
-```bash
-cd jupyterlite
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-jupyter lite build --config jupyter_lite_config.json --output-dir dist
-rm -f dist/package.json dist/package-lock.json dist/yarn.lock
-printf '{\n  "framework": null,\n  "cleanUrls": false\n}\n' > dist/vercel.json
-cd dist
-vercel --prod
-```
+## Important
+The notebook still uses a small hidden portal-session bootstrap so it can reuse the portal session instead of asking students to log in again.
