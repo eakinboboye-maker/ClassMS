@@ -14,6 +14,7 @@ from .security_exam import (
 from .attendance import AttendanceSession, AttendanceRecord
 from .jupyterlite import LessonLaunchConfig
 
+
 __all__ = [
     "User",
     "Course",

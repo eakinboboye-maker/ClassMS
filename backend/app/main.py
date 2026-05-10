@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth, users, courses, questions, mock_exams, formal_exams, grading, admin, health
 from app.core.config import settings
 from app.api import jupyterlite
+from app.api import jupyterlite_portal
 import os
 
 from app.api import imports
@@ -33,3 +34,4 @@ app.include_router(grading.router, prefix="/api/grading", tags=["grading"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(jupyterlite.router, prefix="/api/jupyterlite", tags=["jupyterlite"])
 app.include_router(imports.router, prefix="/api/imports", tags=["imports"])
+app.include_router(jupyterlite_portal.router, prefix="/api/jupyterlite", tags=["jupyterlite-portal"])
