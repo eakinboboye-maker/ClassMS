@@ -1,59 +1,192 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { apiFetch } from "../../lib/imports-api";
-import { loadTeacherSession } from "../../lib/auth";
+
+type GenericRow = Record<string, any>;
 
 export default function RosterPage() {
+  const [token, setToken] = useState("");
+
   const [usersCsv, setUsersCsv] = useState("");
+  const [usersXlsxRowsJson, setUsersXlsxRowsJson] = useState(`[
+  {"Reg No.":"EEE/2026/001","Names":"Amina Yusuf","Email Address":"amina@school.edu","Session":"2026/2027"},
+  {"Reg No.":"EEE/2026/002","Names":"David Ade","Email Address":"david@school.edu","Session":"2026/2027"}
+]`);
   const [usersPreview, setUsersPreview] = useState<any[]>([]);
-  const [enrollmentJson, setEnrollmentJson] = useState(`[{"Reg No.":"EEE/2026/001","Course Code":"EEE355","Section":"A","Session":"2026/2027"}]`);
+
+  const [enrollmentJson, setEnrollmentJson] = useState(`[
+  {"Reg No.":"EEE/2026/001","Course Code":"EEE355","Section":"A","Session":"2026/2027"}
+]`);
+  const [enrollmentSheetRowsJson, setEnrollmentSheetRowsJson] = useState(`[
+  {"Reg No.":"EEE/2026/001","Course Code":"EEE355","Section":"A","Session":"2026/2027"},
+  {"Reg No.":"EEE/2026/002","Course Code":"EEE355","Section":"A","Session":"2026/2027"}
+]`);
   const [enrollmentPreview, setEnrollmentPreview] = useState<any[]>([]);
   const [status, setStatus] = useState("");
 
-  useEffect(() => {
-    const session = loadTeacherSession();
-    if (!session?.token) setStatus("No teacher session found. Please sign in on the Home page.");
-  }, []);
-
-  async function parseUsers() {
+  async function parseUsersCsv() {
     try {
-      const result = await apiFetch("/api/imports/users/parse-csv", { method: "POST", body: JSON.stringify({ text: usersCsv }) });
+      const result = await apiFetch("/api/imports/users/parse-csv", token, {
+        method: "POST",
+        body: JSON.stringify({ text: usersCsv }),
+      });
       setUsersPreview(result.rows || []);
-      setStatus(`Parsed ${result.parsed_count} user row(s)`);
-    } catch (err: any) { setStatus(err.message || "User parse failed"); }
+      setStatus(`Parsed ${result.parsed_count} user row(s) from CSV`);
+    } catch (err: any) {
+      setStatus(err.message || "User CSV parse failed");
+    }
+  }
+
+  async function parseUsersXlsxRows() {
+    try {
+      const rows: GenericRow[] = JSON.parse(usersXlsxRowsJson);
+      const result = await apiFetch("/api/imports/users/parse-xlsx-rows", token, {
+        method: "POST",
+        body: JSON.stringify({ rows }),
+      });
+      setUsersPreview(result.rows || []);
+      setStatus(`Parsed ${result.parsed_count} user row(s) from XLSX rows`);
+    } catch (err: any) {
+      setStatus(err.message || "User XLSX rows parse failed");
+    }
   }
 
   async function createUsers() {
     try {
-      const result = await apiFetch("/api/imports/users/bulk-create", { method: "POST", body: JSON.stringify({ users: usersPreview, default_password: "changeme123", skip_existing: true }) });
+      const result = await apiFetch("/api/imports/users/bulk-create", token, {
+        method: "POST",
+        body: JSON.stringify({
+          users: usersPreview,
+          default_password: "changeme123",
+          skip_existing: true,
+        }),
+      });
       setStatus(`Created ${result.created_count} user(s), skipped ${result.skipped_count}`);
-    } catch (err: any) { setStatus(err.message || "User creation failed"); }
+    } catch (err: any) {
+      setStatus(err.message || "User creation failed");
+    }
   }
 
-  async function parseEnrollment() {
+  async function parseEnrollmentJson() {
     try {
       const rows = JSON.parse(enrollmentJson);
-      const result = await apiFetch("/api/imports/enrollment/parse", { method: "POST", body: JSON.stringify({ rows }) });
+      const result = await apiFetch("/api/imports/enrollment/parse", token, {
+        method: "POST",
+        body: JSON.stringify({ rows }),
+      });
       setEnrollmentPreview(result.rows || []);
-      setStatus(`Parsed ${result.parsed_count} enrollment row(s)`);
-    } catch (err: any) { setStatus(err.message || "Enrollment parse failed"); }
+      setStatus(`Parsed ${result.parsed_count} enrollment row(s) from JSON`);
+    } catch (err: any) {
+      setStatus(err.message || "Enrollment JSON parse failed");
+    }
+  }
+
+  async function parseEnrollmentSheetRows() {
+    try {
+      const rows = JSON.parse(enrollmentSheetRowsJson);
+      const result = await apiFetch("/api/imports/enrollment/parse", token, {
+        method: "POST",
+        body: JSON.stringify({ rows }),
+      });
+      setEnrollmentPreview(result.rows || []);
+      setStatus(`Parsed ${result.parsed_count} enrollment row(s) from CSV/XLSX-style rows`);
+    } catch (err: any) {
+      setStatus(err.message || "Enrollment sheet rows parse failed");
+    }
   }
 
   async function publishEnrollment() {
     try {
-      const result = await apiFetch("/api/imports/enrollment/publish", { method: "POST", body: JSON.stringify({ rows: enrollmentPreview }) });
+      const result = await apiFetch("/api/imports/enrollment/publish", token, {
+        method: "POST",
+        body: JSON.stringify({ rows: enrollmentPreview }),
+      });
       setStatus(`Enrolled ${result.enrolled_count}, skipped ${result.skipped_count}`);
-    } catch (err: any) { setStatus(err.message || "Enrollment publish failed"); }
+    } catch (err: any) {
+      setStatus(err.message || "Enrollment publish failed");
+    }
   }
 
   return (
-    <main>
-      <h1 className="page-title">Roster Import</h1>
-      <p className="page-subtitle">Load student users first, then enroll them into the correct course section.</p>
-      <section className="card card-accent"><h2 className="card-title">Teacher Session</h2><div className="notice notice-info">{status || "Signed-in teacher session will be used automatically."}</div></section>
-      <section className="card"><h2 className="card-title">1. Student Users CSV</h2><label className="label">Paste users CSV</label><textarea className="textarea" value={usersCsv} onChange={(e) => setUsersCsv(e.target.value)} placeholder="Paste student_users_template.csv content here" /><div className="button-row"><button className="btn btn-primary" onClick={parseUsers}>Parse Users</button><button className="btn btn-success" onClick={createUsers} disabled={usersPreview.length === 0}>Create / Update Users</button></div></section>
-      <section className="card"><h2 className="card-title">2. Course Enrollment Rows</h2><label className="label">Paste enrollment JSON rows</label><textarea className="textarea" value={enrollmentJson} onChange={(e) => setEnrollmentJson(e.target.value)} /><div className="button-row"><button className="btn btn-primary" onClick={parseEnrollment}>Parse Enrollment</button><button className="btn btn-success" onClick={publishEnrollment} disabled={enrollmentPreview.length === 0}>Enroll into Section</button></div></section>
+    <main style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
+      <h1>Roster Import</h1>
+      <p>Roster input can be CSV/XLSX. Enrollment publishes as JSON, but you can also paste CSV/XLSX-style row JSON and convert it first.</p>
+
+      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+        <label>Teacher access token</label>
+        <input
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          placeholder="Paste teacher JWT"
+          style={{ width: "100%", marginTop: 8 }}
+        />
+      </div>
+
+      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+        <h2>1. Student Users from CSV</h2>
+        <textarea
+          value={usersCsv}
+          onChange={(e) => setUsersCsv(e.target.value)}
+          placeholder="Paste CSV content here"
+          style={{ width: "100%", minHeight: 180 }}
+        />
+        <div style={{ marginTop: 12 }}>
+          <button onClick={parseUsersCsv}>Parse Users CSV</button>
+        </div>
+      </div>
+
+      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+        <h2>2. Student Users from XLSX Rows JSON</h2>
+        <p>Paste rows extracted from an uploaded Excel file on the frontend.</p>
+        <textarea
+          value={usersXlsxRowsJson}
+          onChange={(e) => setUsersXlsxRowsJson(e.target.value)}
+          style={{ width: "100%", minHeight: 180 }}
+        />
+        <div style={{ marginTop: 12 }}>
+          <button onClick={parseUsersXlsxRows}>Parse Users XLSX Rows</button>
+          <button onClick={createUsers} disabled={usersPreview.length === 0} style={{ marginLeft: 8 }}>
+            Create / Update Users
+          </button>
+        </div>
+        {usersPreview.length > 0 && (
+          <pre style={{ marginTop: 12, whiteSpace: "pre-wrap" }}>{JSON.stringify(usersPreview, null, 2)}</pre>
+        )}
+      </div>
+
+      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+        <h2>3. Enrollment from JSON</h2>
+        <textarea
+          value={enrollmentJson}
+          onChange={(e) => setEnrollmentJson(e.target.value)}
+          style={{ width: "100%", minHeight: 180 }}
+        />
+        <div style={{ marginTop: 12 }}>
+          <button onClick={parseEnrollmentJson}>Parse Enrollment JSON</button>
+        </div>
+      </div>
+
+      <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
+        <h2>4. Enrollment from CSV/XLSX-style Rows JSON</h2>
+        <p>Paste rows extracted from CSV/XLSX, then convert to the JSON payload preview before publish.</p>
+        <textarea
+          value={enrollmentSheetRowsJson}
+          onChange={(e) => setEnrollmentSheetRowsJson(e.target.value)}
+          style={{ width: "100%", minHeight: 180 }}
+        />
+        <div style={{ marginTop: 12 }}>
+          <button onClick={parseEnrollmentSheetRows}>Parse Enrollment Sheet Rows</button>
+          <button onClick={publishEnrollment} disabled={enrollmentPreview.length === 0} style={{ marginLeft: 8 }}>
+            Publish Enrollment JSON
+          </button>
+        </div>
+        {enrollmentPreview.length > 0 && (
+          <pre style={{ marginTop: 12, whiteSpace: "pre-wrap" }}>{JSON.stringify(enrollmentPreview, null, 2)}</pre>
+        )}
+      </div>
+
+      <p>{status}</p>
     </main>
   );
 }

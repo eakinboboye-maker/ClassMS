@@ -65,3 +65,34 @@ class BulkEnrollmentResponse(BaseModel):
     enrolled_count: int
     skipped_count: int
     details: list[dict]
+    
+
+class ParseTextRequest(BaseModel):
+    text: str
+
+
+class ParseRowsRequest(BaseModel):
+    rows: list[dict]
+
+
+class ParsedEnrollmentRow(BaseModel):
+    reg_no: str
+    course_code: str
+    section: str
+    session: str
+
+
+class ParseEnrollmentRowsResponse(BaseModel):
+    parsed_count: int
+    rows: list[ParsedEnrollmentRow]
+    errors: list[dict] = []
+
+
+class BulkEnrollmentRequest(BaseModel):
+    rows: list[ParsedEnrollmentRow]
+
+
+class BulkEnrollmentResponse(BaseModel):
+    enrolled_count: int
+    skipped_count: int
+    details: list[dict]
