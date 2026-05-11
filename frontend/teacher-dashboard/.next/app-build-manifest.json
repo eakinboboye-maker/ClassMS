@@ -1,47 +1,25 @@
 {
   "pages": {
-    "/_not-found/page": [
-      "static/chunks/webpack-db0a529a99835594.js",
-      "static/chunks/4bd1b696-d7266ff7e407fd8a.js",
-      "static/chunks/517-0e6e05e9279f6d45.js",
-      "static/chunks/main-app-c7047859b2910303.js",
-      "static/chunks/app/_not-found/page-bf1fc369eb77e8f8.js"
-    ],
     "/layout": [
-      "static/chunks/webpack-db0a529a99835594.js",
-      "static/chunks/4bd1b696-d7266ff7e407fd8a.js",
-      "static/chunks/517-0e6e05e9279f6d45.js",
-      "static/chunks/main-app-c7047859b2910303.js",
-      "static/css/37437a59550514a7.css",
-      "static/chunks/app/layout-0e0230bb06226bd3.js"
-    ],
-    "/essay-reviews/page": [
-      "static/chunks/webpack-db0a529a99835594.js",
-      "static/chunks/4bd1b696-d7266ff7e407fd8a.js",
-      "static/chunks/517-0e6e05e9279f6d45.js",
-      "static/chunks/main-app-c7047859b2910303.js",
-      "static/chunks/app/essay-reviews/page-1b3964b7343e19e9.js"
-    ],
-    "/roster/page": [
-      "static/chunks/webpack-db0a529a99835594.js",
-      "static/chunks/4bd1b696-d7266ff7e407fd8a.js",
-      "static/chunks/517-0e6e05e9279f6d45.js",
-      "static/chunks/main-app-c7047859b2910303.js",
-      "static/chunks/app/roster/page-28c7f9a046fbf297.js"
-    ],
-    "/question-bank/page": [
-      "static/chunks/webpack-db0a529a99835594.js",
-      "static/chunks/4bd1b696-d7266ff7e407fd8a.js",
-      "static/chunks/517-0e6e05e9279f6d45.js",
-      "static/chunks/main-app-c7047859b2910303.js",
-      "static/chunks/app/question-bank/page-c328352b0fdae450.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/page": [
-      "static/chunks/webpack-db0a529a99835594.js",
-      "static/chunks/4bd1b696-d7266ff7e407fd8a.js",
-      "static/chunks/517-0e6e05e9279f6d45.js",
-      "static/chunks/main-app-c7047859b2910303.js",
-      "static/chunks/app/page-3fdc251e0abb59b3.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
+    "/roster/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/roster/page.js"
+    ],
+    "/question-bank/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/question-bank/page.js"
     ]
   }
 }

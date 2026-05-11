@@ -1,1 +1,11 @@
-{"version":4,"routes":{"/roster":{"experimentalBypassFor":[{"type":"header","key":"Next-Action"},{"type":"header","key":"content-type","value":"multipart/form-data;.*"}],"initialRevalidateSeconds":false,"srcRoute":"/roster","dataRoute":"/roster.rsc","allowHeader":["x-matched-path","x-prerender-revalidate","x-prerender-revalidate-if-generated","x-next-revalidated-tags","x-next-revalidate-tag-token"]},"/":{"experimentalBypassFor":[{"type":"header","key":"Next-Action"},{"type":"header","key":"content-type","value":"multipart/form-data;.*"}],"initialRevalidateSeconds":false,"srcRoute":"/","dataRoute":"/index.rsc","allowHeader":["x-matched-path","x-prerender-revalidate","x-prerender-revalidate-if-generated","x-next-revalidated-tags","x-next-revalidate-tag-token"]},"/essay-reviews":{"experimentalBypassFor":[{"type":"header","key":"Next-Action"},{"type":"header","key":"content-type","value":"multipart/form-data;.*"}],"initialRevalidateSeconds":false,"srcRoute":"/essay-reviews","dataRoute":"/essay-reviews.rsc","allowHeader":["x-matched-path","x-prerender-revalidate","x-prerender-revalidate-if-generated","x-next-revalidated-tags","x-next-revalidate-tag-token"]},"/question-bank":{"experimentalBypassFor":[{"type":"header","key":"Next-Action"},{"type":"header","key":"content-type","value":"multipart/form-data;.*"}],"initialRevalidateSeconds":false,"srcRoute":"/question-bank","dataRoute":"/question-bank.rsc","allowHeader":["x-matched-path","x-prerender-revalidate","x-prerender-revalidate-if-generated","x-next-revalidated-tags","x-next-revalidate-tag-token"]}},"dynamicRoutes":{},"notFoundRoutes":[],"preview":{"previewModeId":"0e6a1eb495a02c083abacf5fabca2c6a","previewModeSigningKey":"895c703792d33d8e9da85f8d587acf9fc4e73aea2a4c1b180bbc3a32bca65129","previewModeEncryptionKey":"184d55e71090f0af6c673976dd0ba0fe4c208ec120a758224965e566c8fddc7e"}}
+{
+  "version": 4,
+  "routes": {},
+  "dynamicRoutes": {},
+  "notFoundRoutes": [],
+  "preview": {
+    "previewModeId": "f1c7a26fafee21b943c8de9e8577ee01",
+    "previewModeSigningKey": "14f078f1fb006acc7db6309b630cacb52659077869bc0ba13300d8411925d256",
+    "previewModeEncryptionKey": "984a259eb5de41cc3ad1e0b8afe2decd27101331052b6de2b4a02e3f7ef02315"
+  }
+}
