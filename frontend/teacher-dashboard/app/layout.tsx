@@ -6,11 +6,7 @@ export const metadata = {
   description: "Teacher dashboard for class management, rosters, questions, and reviews",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>

@@ -1,14 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { loginTeacher, fetchMe } from "../lib/dashboard-api";
 
 export default function HomePage() {
   const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("admin123");
-  const [status, setStatus] = useState("Use this dashboard to manage questions, rosters, and reviews.");
+  const [status, setStatus] = useState("Sign in to use the live dashboard.");
+  const [token, setToken] = useState("");
+  const [me, setMe] = useState<any>(null);
 
-  function handleLogin() {
-    setStatus(`Login submitted for ${email}. Connect this to your existing auth flow.`);
+  async function handleLogin() {
+    try {
+      const auth = await loginTeacher(email, password);
+      setToken(auth.access_token);
+      const profile = await fetchMe(auth.access_token);
+      setMe(profile);
+      setStatus(`Logged in as ${profile.full_name}`);
+    } catch (err: any) {
+      setStatus(err.message || "Login failed");
+    }
   }
 
   return (
@@ -28,6 +39,7 @@ export default function HomePage() {
         <div className="button-row">
           <button className="btn btn-primary" onClick={handleLogin}>Login</button>
         </div>
+        <div className={`notice ${me ? "notice-success" : "notice-info"}`}>{status}</div>
       </section>
 
       <div className="grid-2">
@@ -39,17 +51,23 @@ export default function HomePage() {
           <div className="button-row">
             <a className="btn btn-primary" href="/question-bank">Open Question Bank</a>
             <a className="btn btn-secondary" href="/roster">Open Roster</a>
+            <a className="btn btn-warning" href="/essay-reviews">Open Essay Reviews</a>
           </div>
         </section>
 
         <section className="card">
-          <h2 className="card-title">System Status</h2>
-          <div className="notice notice-info">{status}</div>
-          <div className="spacer-12" />
-          <span className="badge">Teacher</span>
-          <span className="badge">Uploads</span>
-          <span className="badge">Reviews</span>
-          <span className="badge">Publishing</span>
+          <h2 className="card-title">Live Session</h2>
+          {me ? (
+            <>
+              <div className="kv"><strong>Name:</strong> {me.full_name}</div>
+              <div className="kv"><strong>Email:</strong> {me.email}</div>
+              <div className="kv"><strong>Role:</strong> {me.role}</div>
+              <div className="badge">Authenticated</div>
+              {token ? <div className="badge">Token ready</div> : null}
+            </>
+          ) : (
+            <div className="notice notice-info">No active session yet.</div>
+          )}
         </section>
       </div>
     </main>
