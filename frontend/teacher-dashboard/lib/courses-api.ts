@@ -23,8 +23,11 @@ export async function createSection(
     capacity?: number | null;
   }
 ) {
-  return apiFetch(`/api/courses/${courseId}/sections`, {
+  return apiFetch(`/api/courses/sections`, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      course_id: Number(courseId),
+      ...payload,
+    }),
   });
 }
