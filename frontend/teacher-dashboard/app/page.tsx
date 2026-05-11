@@ -39,7 +39,10 @@ export default function HomePage() {
   return (
     <main>
       <h1 className="page-title">Teacher Dashboard</h1>
-      <p className="page-subtitle">Manage classroom content, upload rosters, review essay grading, and publish learning materials.</p>
+      <p className="page-subtitle">
+        Manage courses, sections, rosters, question uploads, and essay reviews.
+      </p>
+
       <section className="card card-accent">
         <h2 className="card-title">Login</h2>
         <label className="label">Email</label>
@@ -53,6 +56,33 @@ export default function HomePage() {
         </div>
         <div className={`notice ${me ? "notice-success" : "notice-info"}`}>{status}</div>
       </section>
+
+      <div className="grid-2">
+        <section className="card">
+          <h2 className="card-title">Quick Actions</h2>
+          <div className="button-row">
+            <a className="btn btn-primary" href="/courses">Courses & Sections</a>
+            <a className="btn btn-secondary" href="/roster">Roster</a>
+            <a className="btn btn-primary" href="/question-bank">Question Bank</a>
+            <a className="btn btn-warning" href="/essay-reviews">Essay Reviews</a>
+          </div>
+        </section>
+
+        <section className="card">
+          <h2 className="card-title">Live Session</h2>
+          {me ? (
+            <>
+              <div className="kv"><strong>Name:</strong> {me.full_name}</div>
+              <div className="kv"><strong>Email:</strong> {me.email}</div>
+              <div className="kv"><strong>Role:</strong> {me.role}</div>
+              <div className="badge">Authenticated</div>
+              <div className="badge">Session saved</div>
+            </>
+          ) : (
+            <div className="notice notice-info">No active session yet.</div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

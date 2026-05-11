@@ -14,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="topnav-inner">
             <a className="brand" href="/">ClassLite</a>
             <a href="/">Home</a>
+            <a href="/courses">Courses</a>
             <a href="/essay-reviews">Essay Reviews</a>
             <a href="/question-bank">Question Bank</a>
             <a href="/roster">Roster</a>
