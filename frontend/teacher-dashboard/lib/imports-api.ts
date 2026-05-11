@@ -14,3 +14,5 @@ export async function apiFetch(path: string, token: string, options: RequestInit
   }
   return res.json();
 }
+
+export { API_BASE };
