@@ -1,4 +1,8 @@
 {
+  "framework": "other",
+  "installCommand": "pip install -r requirements.txt",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/(.*)",
