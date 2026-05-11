@@ -257,7 +257,6 @@ def get_attendance_window(
         raise HTTPException(status_code=404, detail="Attendance not configured for lesson")
     return attendance
 
-
 @router.post("/attendance/{lesson_slug}/mark")
 def mark_attendance_for_lesson(
     lesson_slug: str,
@@ -281,18 +280,17 @@ def mark_attendance_for_lesson(
         attendance_session_id=row.attendance_session_id,
         user_id=current_user.id,
         status="present",
-        metadata_json=json.dumps({"marked_from": "portal", "lesson_slug": lesson_slug}),
     )
     db.add(record)
     db.commit()
     return {"status": "marked", "lesson_slug": lesson_slug}
-
 
 @router.get("/portal/performance")
 def portal_performance(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+
     attempts = db.query(Attempt, Assessment).join(
         Assessment, Assessment.id == Attempt.assessment_id
     ).filter(

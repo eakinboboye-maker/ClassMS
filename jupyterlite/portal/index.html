@@ -92,7 +92,7 @@
         <h3>${lesson.title || lesson.lesson_slug}</h3>
         <div class="kv"><strong>Lesson slug:</strong> ${lesson.lesson_slug}</div>
         <div class="kv"><strong>Notebook:</strong> ${lesson.notebook_path || "—"}</div>
-        <div class="kv countdown">${countdownText(attendance.attendance_open_at, attendance.attendance_close_at)}</div>
+        <div class="kv countdown">${attendance.is_open_now ? "Attendance is open for this lesson." : "Attendance is not open right now."}</div>
         <div class="row"><button class="btn btn-primary openNotebookBtn">Open Notebook</button></div>
       `;
       div.querySelector(".openNotebookBtn").onclick = async () => {
@@ -134,8 +134,6 @@
             const allowed = !!a.is_open_now && !a.already_marked;
             wrap.innerHTML = `
               <div><strong>${lesson.title || lesson.lesson_slug}</strong></div>
-              <div class="kv"><strong>Open:</strong> ${formatDateTime(a.attendance_open_at)}</div>
-              <div class="kv"><strong>Close:</strong> ${formatDateTime(a.attendance_close_at)}</div>
               <div class="kv countdown">${countdownText(a.attendance_open_at, a.attendance_close_at)}</div>
               <div class="kv"><strong>Already marked:</strong> ${a.already_marked ? "Yes" : "No"}</div>
               <div class="row"><button class="btn btn-success markBtn" ${allowed ? "" : "disabled"}>Mark Attendance</button></div>
