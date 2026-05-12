@@ -44,8 +44,11 @@ export default function RosterPage() {
   async function parseUsersXlsxRows() {
     try {
       const rows: GenericRow[] = JSON.parse(usersXlsxRowsJson);
-      const result = await apiFetch("/api/imports/users/parse-xlsx-rows", token, {
+      const result = await apiFetch("/api/imports/users/parse-xlsx-rows", {
         method: "POST",
+        headers: {
+    	  Authorization: `Bearer ${token}`,
+  	},
         body: JSON.stringify({ rows }),
       });
       setUsersPreview(result.rows || []);
@@ -57,8 +60,11 @@ export default function RosterPage() {
 
   async function createUsers() {
     try {
-      const result = await apiFetch("/api/imports/users/bulk-create", token, {
+      const result = await apiFetch("/api/imports/users/bulk-create", {
         method: "POST",
+        headers: {
+    	  Authorization: `Bearer ${token}`,
+  	},
         body: JSON.stringify({
           users: usersPreview,
           default_password: "changeme123",
@@ -74,8 +80,11 @@ export default function RosterPage() {
   async function parseEnrollmentJson() {
     try {
       const rows = JSON.parse(enrollmentJson);
-      const result = await apiFetch("/api/imports/enrollment/parse", token, {
+      const result = await apiFetch("/api/imports/enrollment/parse", {
         method: "POST",
+        headers: {
+    	  Authorization: `Bearer ${token}`,
+  	},
         body: JSON.stringify({ rows }),
       });
       setEnrollmentPreview(result.rows || []);
@@ -88,8 +97,11 @@ export default function RosterPage() {
   async function parseEnrollmentSheetRows() {
     try {
       const rows = JSON.parse(enrollmentSheetRowsJson);
-      const result = await apiFetch("/api/imports/enrollment/parse", token, {
+      const result = await apiFetch("/api/imports/enrollment/parse", {
         method: "POST",
+        headers: {
+    	  Authorization: `Bearer ${token}`,
+  	},
         body: JSON.stringify({ rows }),
       });
       setEnrollmentPreview(result.rows || []);
@@ -101,8 +113,11 @@ export default function RosterPage() {
 
   async function publishEnrollment() {
     try {
-      const result = await apiFetch("/api/imports/enrollment/publish", token, {
+      const result = await apiFetch("/api/imports/enrollment/publish", {
         method: "POST",
+        headers: {
+    	  Authorization: `Bearer ${token}`,
+  	},
         body: JSON.stringify({ rows: enrollmentPreview }),
       });
       setStatus(`Enrolled ${result.enrolled_count}, skipped ${result.skipped_count}`);
