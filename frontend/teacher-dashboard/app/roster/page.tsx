@@ -27,8 +27,11 @@ export default function RosterPage() {
 
   async function parseUsersCsv() {
     try {
-      const result = await apiFetch("/api/imports/users/parse-csv", token, {
+      const result = await apiFetch("/api/imports/users/parse-csv", {
         method: "POST",
+        headers: {
+    	  Authorization: `Bearer ${token}`,
+  	},
         body: JSON.stringify({ text: usersCsv }),
       });
       setUsersPreview(result.rows || []);
