@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { apiFetch } from "../../lib/imports-api";
+import { apiFetchWithToken } from "../../lib/imports-api";
 
 type GenericRow = Record<string, any>;
 
@@ -20,7 +20,7 @@ export default function RosterPage() {
 
   async function parseUsersCsv() {
     try {
-      const result = await apiFetch("/api/imports/users/parse-csv", token, {
+      const result = await apiFetchWithToken("/api/imports/users/parse-csv", token, {
         method: "POST",
         body: JSON.stringify({ text: usersCsv }),
       });
@@ -42,7 +42,7 @@ export default function RosterPage() {
         defval: "",
       });
 
-      const result = await apiFetch("/api/imports/users/parse-xlsx-rows", token, {
+      const result = await apiFetchWithToken("/api/imports/users/parse-xlsx-rows", token, {
         method: "POST",
         body: JSON.stringify({ rows }),
       });
@@ -56,7 +56,7 @@ export default function RosterPage() {
 
   async function createUsers() {
     try {
-      const result = await apiFetch("/api/imports/users/bulk-create", token, {
+      const result = await apiFetchWithToken("/api/imports/users/bulk-create", token, {
         method: "POST",
         body: JSON.stringify({
           users: usersPreview,
@@ -73,7 +73,7 @@ export default function RosterPage() {
   async function parseEnrollmentJson() {
     try {
       const rows = JSON.parse(enrollmentJson);
-      const result = await apiFetch("/api/imports/enrollment/parse", token, {
+      const result = await apiFetchWithToken("/api/imports/enrollment/parse", token, {
         method: "POST",
         body: JSON.stringify({ rows }),
       });
@@ -86,7 +86,7 @@ export default function RosterPage() {
 
   async function publishEnrollment() {
     try {
-      const result = await apiFetch("/api/imports/enrollment/publish", token, {
+      const result = await apiFetchWithToken("/api/imports/enrollment/publish", token, {
         method: "POST",
         body: JSON.stringify({ rows: enrollmentPreview }),
       });
@@ -113,7 +113,9 @@ export default function RosterPage() {
 
       <div style={{ background: "#fff", padding: 16, borderRadius: 12, marginBottom: 16 }}>
         <h2>1. Load Users from Excel</h2>
-        <p>Expected columns: <b>Reg No.</b>, <b>Names</b>, <b>Email Address</b>, <b>Session</b></p>
+        <p>
+          Expected columns: <b>Reg No.</b>, <b>Names</b>, <b>Email Address</b>, <b>Session</b>
+        </p>
 
         <input
           type="file"
