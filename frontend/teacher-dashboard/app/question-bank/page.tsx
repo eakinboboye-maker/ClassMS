@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "../../lib/imports-api";
+import { apiFetchWithToken } from "../../lib/imports-api";
 
 export default function QuestionBankPage() {
   const [token, setToken] = useState("");
@@ -18,7 +18,7 @@ export default function QuestionBankPage() {
           ? "/api/imports/questions/parse-text"
           : "/api/imports/questions/parse-csv";
 
-      const result = await apiFetch(path, token, {
+      const result = await apiFetchWithToken(path, token, {
         method: "POST",
         body: JSON.stringify({ text }),
       });
@@ -33,7 +33,7 @@ export default function QuestionBankPage() {
 
   async function publishQuestions() {
     try {
-      const result = await apiFetch("/api/imports/questions/publish", token, {
+      const result = await apiFetchWithToken("/api/imports/questions/publish", token, {
         method: "POST",
         body: JSON.stringify({ items: preview }),
       });
@@ -119,14 +119,23 @@ export default function QuestionBankPage() {
                 marginBottom: 12,
               }}
             >
-              <div><b>Type:</b> {item.type}</div>
-              <div><b>Prompt:</b> {item.prompt_md}</div>
-              <div><b>Topics:</b> {(item.topics || []).join(", ")}</div>
-              <div><b>Labels:</b> {(item.labels || []).join(", ")}</div>
+              <div>
+                <b>Type:</b> {item.type}
+              </div>
+              <div>
+                <b>Prompt:</b> {item.prompt_md}
+              </div>
+              <div>
+                <b>Topics:</b> {(item.topics || []).join(", ")}
+              </div>
+              <div>
+                <b>Labels:</b> {(item.labels || []).join(", ")}
+              </div>
               <div>
                 <b>Explanation visible after submit:</b>{" "}
                 {String(item.show_explanation_after_submit)}
               </div>
+
               {(item.options || []).length > 0 && (
                 <ul>
                   {item.options.map((opt: any, j: number) => (
