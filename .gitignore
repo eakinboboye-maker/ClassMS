@@ -4,4 +4,9 @@ backend/.venv
 frontend/**/node_modules
 .jupyterlite.doit.db
 dist
-)_old.*
+_old.*
+.next
+node_modules
+dist
+.env
+.env.local
