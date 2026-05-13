@@ -1,9 +1,10 @@
-import { getTeacherToken } from "./auth";
-
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
-  const token = getTeacherToken();
+export async function apiFetch(
+  path: string,
+  token: string,
+  options: RequestInit = {}
+) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -12,10 +13,10 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
       ...(options.headers || {}),
     },
   });
+
   if (!res.ok) {
     throw new Error(`${res.status} ${await res.text()}`);
   }
+
   return res.json();
 }
-
-export { API_BASE };
