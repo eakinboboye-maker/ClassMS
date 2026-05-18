@@ -1,3 +1,0 @@
-module.exports=[45878,a=>{"use strict";async function b(a,c,d={}){let e=await fetch(`https://classlite-backend.onrender.com${a}`,{...d,headers:{"Content-Type":"application/json",Authorization:`Bearer ${c}`,...d.headers||{}}});if(!e.ok)throw Error(`${e.status} ${await e.text()}`);return e.json()}a.s(["apiFetch",0,b])}];
-
-//# sourceMappingURL=032f_sslite-render-vercel-ready_frontend_teacher-dashboard_lib_imports-api_ts_0ait44v._.js.map

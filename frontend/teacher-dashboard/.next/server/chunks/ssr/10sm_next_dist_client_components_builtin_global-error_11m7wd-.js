@@ -1,3 +1,0 @@
-module.exports=[94090,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(91949);a.n(d("[project]/Documents/Projects/classlite-render-vercel-ready/frontend/teacher-dashboard/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},58515,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(91949);a.n(d("[project]/Documents/Projects/classlite-render-vercel-ready/frontend/teacher-dashboard/node_modules/next/dist/client/components/builtin/global-error.js"))},924,a=>{"use strict";a.i(94090);var b=a.i(58515);a.n(b)},54144,a=>{a.n(a.i(924))}];
-
-//# sourceMappingURL=10sm_next_dist_client_components_builtin_global-error_11m7wd-.js.map
