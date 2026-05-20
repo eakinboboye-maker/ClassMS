@@ -30,31 +30,41 @@
         <div class="kv"><strong>Session state:</strong> <span id="sessionState">none</span></div>
       </section>
     </div>
+
     <div style="height:18px"></div>
+
     <section class="card">
       <h2>Available Lessons</h2>
       <p class="kv">Lesson access is decided here from teacher lesson config.</p>
       <div id="lessons"></div>
     </section>
+
     <div style="height:18px"></div>
+
     <div class="grid">
       <section class="card">
         <h2>Attendance</h2>
-        <p class="kv">Attendance is only markable inside the lecturer-defined interval.</p>
-        <div id="attendancePanel">Log in to view attendance availability.</div>
+        <p class="kv">Attendance marking is temporarily disabled from the frontend.</p>
+        <div id="attendancePanel" class="notice notice-info">
+          Attendance will be enabled later by the lecturer.
+        </div>
       </section>
+
       <section class="card">
         <h2>My Performance Over Time</h2>
         <div id="performancePanel">Log in to view your performance history.</div>
       </section>
     </div>
+
     <div style="height:18px"></div>
+
     <section class="card">
       <h2>Portal Mock Exams</h2>
       <p class="kv">Mock exams run on the portal. Lesson quizzes remain in the notebook.</p>
       <div id="mockExamList">Log in to view mock exams.</div>
     </section>
   </div>
+
   <script src="./assets/portal.js"></script>
   <script>
     const emailEl = document.getElementById("email");
@@ -92,7 +102,7 @@
         <h3>${lesson.title || lesson.lesson_slug}</h3>
         <div class="kv"><strong>Lesson slug:</strong> ${lesson.lesson_slug}</div>
         <div class="kv"><strong>Notebook:</strong> ${lesson.notebook_path || "—"}</div>
-        <div class="kv countdown">${attendance.is_open_now ? "Attendance is open for this lesson." : "Attendance is not open right now."}</div>
+        <div class="kv countdown">${countdownText(attendance.attendance_open_at, attendance.attendance_close_at)}</div>
         <div class="row"><button class="btn btn-primary openNotebookBtn">Open Notebook</button></div>
       `;
       div.querySelector(".openNotebookBtn").onclick = async () => {
@@ -111,42 +121,21 @@
       const session = getSession();
       if (!session?.token) {
         lessonsEl.innerHTML = "<div class='notice notice-info'>Log in to see lessons.</div>";
-        attendancePanel.innerHTML = "<div class='notice notice-info'>Log in to see attendance.</div>";
+        attendancePanel.innerHTML = "<div class='notice notice-info'>Attendance marking is temporarily disabled from the frontend.</div>";
         performancePanel.innerHTML = "<div class='notice notice-info'>Log in to see performance.</div>";
         mockExamList.innerHTML = "<div class='notice notice-info'>Log in to see mock exams.</div>";
         return;
       }
       try {
         const home = await loadPortalHome();
+
         lessonsEl.innerHTML = "";
         (home.lessons || []).forEach((lesson) => lessonsEl.appendChild(lessonCard(lesson)));
-        if ((home.lessons || []).length === 0) lessonsEl.innerHTML = "<div class='notice notice-info'>No lessons available.</div>";
-
-        attendancePanel.innerHTML = "";
-        const attendanceLessons = (home.lessons || []).filter((x) => x.attendance);
-        if (attendanceLessons.length === 0) {
-          attendancePanel.innerHTML = "<div class='notice notice-info'>No attendance sessions configured.</div>";
-        } else {
-          attendanceLessons.forEach((lesson) => {
-            const a = lesson.attendance;
-            const wrap = document.createElement("div");
-            wrap.className = "question";
-            const allowed = !!a.is_open_now && !a.already_marked;
-            wrap.innerHTML = `
-              <div><strong>${lesson.title || lesson.lesson_slug}</strong></div>
-              <div class="kv countdown">${countdownText(a.attendance_open_at, a.attendance_close_at)}</div>
-              <div class="kv"><strong>Already marked:</strong> ${a.already_marked ? "Yes" : "No"}</div>
-              <div class="row"><button class="btn btn-success markBtn" ${allowed ? "" : "disabled"}>Mark Attendance</button></div>
-            `;
-            wrap.querySelector(".markBtn").onclick = async () => {
-              try {
-                await markAttendance(lesson.lesson_slug);
-                await renderHome();
-              } catch (err) { alert(err.message || String(err)); }
-            };
-            attendancePanel.appendChild(wrap);
-          });
+        if ((home.lessons || []).length === 0) {
+          lessonsEl.innerHTML = "<div class='notice notice-info'>No lessons available.</div>";
         }
+
+        attendancePanel.innerHTML = "<div class='notice notice-info'>Attendance marking is temporarily disabled from the frontend.</div>";
 
         performancePanel.innerHTML = "";
         const perf = home.performance || await loadPerformance();
