@@ -1,0 +1,12 @@
+{
+  "name": "classlite-jupyterlite-portal-autostart",
+  "private": true,
+  "version": "0.7.0",
+  "scripts": {
+    "build": "python -m jupyter lite build --config jupyter_lite_config.json --output-dir dist && python scripts/copy_portal.py",
+    "clean": "rm -rf dist .jupyterlite.doit.db",
+    "rebuild": "npm run clean && npm run build",
+    "serve": "python -m http.server 9000 -d dist",
+    "serve_headers": "npx static-handler --cors --coop --coep --corp ./dist"
+  }
+}

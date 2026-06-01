@@ -1,14 +1,31 @@
-# ClassLite JupyterLite Portal Upgrade
+# Corrected ClassLite JupyterLite App
 
-This upgrade moves these features from notebooks to the portal:
-- login
-- lesson access by teacher lesson config
-- attendance marking
-- attendance window enforcement
-- student performance over time
-- portal mock exam flow
+This corrected version includes:
+- root portal page copied into `dist/index.html`
+- portal assets copied into `dist/assets`
+- portal mock exam page
+- portal stylesheet
+- stricter `copy_portal.py`
+- build script that prints `dist` contents for debugging
 
-Lesson quizzes remain inside notebooks.
+## Local run
+```bash
+npm run build
+npm run serve
+```
 
-## Important
-The notebook still uses a small hidden portal-session bootstrap so it can reuse the portal session instead of asking students to log in again.
+Open:
+- http://localhost:9000/
+- http://localhost:9000/lab/index.html
+
+For a stricter local server with browser-isolation headers:
+```bash
+npm run serve_headers
+```
+
+## Vercel
+Use:
+- Framework: Other
+- Install: `python -m pip install --break-system-packages -r requirements.txt`
+- Build: `npm run build`
+- Output: `dist`

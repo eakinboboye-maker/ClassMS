@@ -7,4 +7,5 @@ dependencies:
   - ipywidgets
   - requests
   - matplotlib
+  - pandas
 

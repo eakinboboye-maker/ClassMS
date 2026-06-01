@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ClassLite Learn Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+</head>
+<body>
+  <div class="header"><div class="header-inner">ClassLite Learn Portal</div></div>
+  <div class="wrap">
+    <div class="grid">
+      <section class="card">
+        <h2>Student Login</h2>
+        <label class="label">Email</label>
+        <input id="email" class="input" placeholder="student@example.com" />
+        <div style="height:12px"></div>
+        <label class="label">Password</label>
+        <input id="password" type="password" class="input" placeholder="Password" />
+        <div class="row">
+          <button id="loginBtn" class="btn btn-primary">Login</button>
+          <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+        </div>
+        <div id="loginStatus" class="notice notice-info">Log in from the portal. Notebooks no longer show login.</div>
+      </section>
+      <section class="card">
+        <h2>Session</h2>
+        <div class="kv"><strong>User:</strong> <span id="whoami">Not logged in</span></div>
+        <div class="kv"><strong>Current time:</strong> <span id="now"></span></div>
+        <div class="kv"><strong>Session state:</strong> <span id="sessionState">none</span></div>
+      </section>
+    </div>
+
+    <div style="height:18px"></div>
+
+    <section class="card">
+      <h2>Available Lessons</h2>
+      <p class="kv">Lesson access is decided here from teacher lesson config.</p>
+      <div id="lessons"></div>
+    </section>
+
+    <div style="height:18px"></div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Attendance</h2>
+        <p class="kv">Attendance marking is temporarily disabled from the frontend.</p>
+        <div id="attendancePanel" class="notice notice-info">
+          Attendance will be enabled later by the lecturer.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>My Performance Over Time</h2>
+        <div id="performancePanel">Log in to view your performance history.</div>
+      </section>
+    </div>
+
+    <div style="height:18px"></div>
+
+    <section class="card">
+      <h2>Portal Mock Exams</h2>
+      <p class="kv">Mock exams run on the portal. Lesson quizzes remain in the notebook.</p>
+      <div id="mockExamList">Log in to view mock exams.</div>
+    </section>
+  </div>
+
+  <script src="./assets/portal.js"></script>
+  <script>
+    const emailEl = document.getElementById("email");
+    const passwordEl = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const loginStatus = document.getElementById("loginStatus");
+    const whoami = document.getElementById("whoami");
+    const nowEl = document.getElementById("now");
+    const sessionState = document.getElementById("sessionState");
+    const lessonsEl = document.getElementById("lessons");
+    const attendancePanel = document.getElementById("attendancePanel");
+    const performancePanel = document.getElementById("performancePanel");
+    const mockExamList = document.getElementById("mockExamList");
+
+    function updateClock(){ nowEl.textContent = new Date().toLocaleString(); }
+    setInterval(updateClock, 1000); updateClock();
+
+    function renderSessionInfo() {
+      const s = getSession();
+      if (s?.user) {
+        whoami.textContent = `${s.user.full_name} (${s.user.email})`;
+        sessionState.textContent = "active";
+      } else {
+        whoami.textContent = "Not logged in";
+        sessionState.textContent = "none";
+      }
+    }
+
+    function lessonCard(lesson) {
+      const div = document.createElement("div");
+      div.className = "card lesson-card";
+      const attendance = lesson.attendance || {};
+      div.innerHTML = `
+        <h3>${lesson.title || lesson.lesson_slug}</h3>
+        <div class="kv"><strong>Lesson slug:</strong> ${lesson.lesson_slug}</div>
+        <div class="kv"><strong>Notebook:</strong> ${lesson.notebook_path || "—"}</div>
+        <div class="kv countdown">${countdownText(attendance.attendance_open_at, attendance.attendance_close_at)}</div>
+        <div class="row"><button class="btn btn-primary openNotebookBtn">Open Notebook</button></div>
+      `;
+      div.querySelector(".openNotebookBtn").onclick = async () => {
+        try {
+          const launch = await launchLesson(lesson.lesson_slug);
+          setLaunchContext(launch);
+          const path = launch.notebook_path || lesson.notebook_path || `EEE355/${lesson.lesson_slug}.ipynb`;
+          const labUrl = new URL('../lab/index.html', location.href);
+          labUrl.searchParams.set('path', path);
+          location.href = labUrl.toString();
+        } catch (err) { alert(err.message || String(err)); }
+      };
+      return div;
+    }
+
+    async function renderHome() {
+      renderSessionInfo();
+      const session = getSession();
+      if (!session?.token) {
+        lessonsEl.innerHTML = "<div class='notice notice-info'>Log in to see lessons.</div>";
+        attendancePanel.innerHTML = "<div class='notice notice-info'>Attendance marking is temporarily disabled from the frontend.</div>";
+        performancePanel.innerHTML = "<div class='notice notice-info'>Log in to see performance.</div>";
+        mockExamList.innerHTML = "<div class='notice notice-info'>Log in to see mock exams.</div>";
+        return;
+      }
+      try {
+        const home = await loadPortalHome();
+
+        lessonsEl.innerHTML = "";
+        (home.lessons || []).forEach((lesson) => lessonsEl.appendChild(lessonCard(lesson)));
+        if ((home.lessons || []).length === 0) {
+          lessonsEl.innerHTML = "<div class='notice notice-info'>No lessons available.</div>";
+        }
+
+        attendancePanel.innerHTML = "<div class='notice notice-info'>Attendance marking is temporarily disabled from the frontend.</div>";
+
+        performancePanel.innerHTML = "";
+        const perf = home.performance || await loadPerformance();
+        if (!(perf.items || []).length) {
+          performancePanel.innerHTML = "<div class='notice notice-info'>No submitted performance data yet.</div>";
+        } else {
+          (perf.items || []).forEach((item) => {
+            const div = document.createElement("div");
+            div.className = "question";
+            div.innerHTML = `
+              <div><strong>${item.assessment_title}</strong></div>
+              <div class="kv"><strong>Type:</strong> ${item.assessment_type}</div>
+              <div class="kv"><strong>Submitted:</strong> ${item.submitted_at || "—"}</div>
+              <div class="kv"><strong>Score:</strong> ${item.total_awarded} / ${item.total_max}</div>
+              <div class="kv"><strong>Percent:</strong> ${Number(item.percent || 0).toFixed(1)}%</div>
+            `;
+            performancePanel.appendChild(div);
+          });
+        }
+
+        mockExamList.innerHTML = "";
+        const mocks = home.mock_exams || [];
+        if (!mocks.length) {
+          mockExamList.innerHTML = "<div class='notice notice-info'>No mock exams available.</div>";
+        } else {
+          mocks.forEach((mock) => {
+            const div = document.createElement("div");
+            div.className = "question";
+            div.innerHTML = `
+              <div><strong>${mock.title || mock.lesson_slug}</strong></div>
+              <div class="kv"><strong>Lesson slug:</strong> ${mock.lesson_slug}</div>
+              <div class="row"><a class="btn btn-primary" href="./mock-exam.html?lesson_slug=${encodeURIComponent(mock.lesson_slug)}">Open Mock Exam</a></div>
+            `;
+            mockExamList.appendChild(div);
+          });
+        }
+      } catch (err) {
+        lessonsEl.innerHTML = `<div class='notice notice-error'>${err.message || String(err)}</div>`;
+      }
+    }
+
+    loginBtn.onclick = async () => {
+      try {
+        const session = await login(emailEl.value.trim(), passwordEl.value);
+        loginStatus.className = "notice notice-success";
+        loginStatus.textContent = `Logged in as ${session.user.full_name}`;
+        renderHome();
+      } catch (err) {
+        loginStatus.className = "notice notice-error";
+        loginStatus.textContent = err.message || String(err);
+      }
+    };
+
+    logoutBtn.onclick = () => {
+      clearSession();
+      loginStatus.className = "notice notice-info";
+      loginStatus.textContent = "Logged out.";
+      renderHome();
+    };
+
+    renderHome();
+  </script>
+</body>
+</html>

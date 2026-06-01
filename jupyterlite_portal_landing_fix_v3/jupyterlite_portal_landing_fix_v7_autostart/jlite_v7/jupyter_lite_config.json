@@ -1,0 +1,12 @@
+{
+  "LiteBuildConfig": {
+    "contents": [
+      "content"
+    ],
+    "output_dir": "dist",
+    "apps": [
+      "lab",
+      "retro"
+    ]
+  }
+}

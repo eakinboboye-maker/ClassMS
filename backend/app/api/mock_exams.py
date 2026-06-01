@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user, require_role
 from app.models.user import User
 from app.models.assessment import Assessment, AssessmentWindow, AssessmentItem, Attempt
-from app.models.question import Question, QuestionOption, QuestionGap
+from app.models.question import Question, QuestionOption, QuestionGap, AcceptedAnswer
 from app.models.grading import Score, AIGradingJob
 from app.schemas.assessment import AssessmentCreate, AssessmentRead, StartAssessmentResponse
 from app.schemas.response import AutosavePayload, FinalSubmitRequest

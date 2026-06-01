@@ -110,7 +110,7 @@
           const launch = await launchLesson(lesson.lesson_slug);
           setLaunchContext(launch);
           const path = launch.notebook_path || lesson.notebook_path || `EEE355/${lesson.lesson_slug}.ipynb`;
-          location.href = `../lab/index.html?path=${encodeURIComponent(path)}`;
+          location.href = `./lab/index.html?path=${encodeURIComponent(path)}`;
         } catch (err) { alert(err.message || String(err)); }
       };
       return div;
