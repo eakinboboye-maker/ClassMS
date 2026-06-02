@@ -29,24 +29,6 @@
         <div class="kv"><strong>Current time:</strong> <span id="now"></span></div>
         <div class="kv"><strong>Session state:</strong> <span id="sessionState">none</span></div>
       </section>
-
-      <section class="card" id="changePasswordCard">
-        <h2>Change Password</h2>
-        <p class="kv">Use this after logging in with your current/default password.</p>
-        <label class="label">Current Password</label>
-        <input id="currentPassword" type="password" class="input" autocomplete="current-password" placeholder="Current password" />
-        <div style="height:12px"></div>
-        <label class="label">New Password</label>
-        <input id="newPassword" type="password" class="input" autocomplete="new-password" placeholder="At least 8 characters" />
-        <div style="height:12px"></div>
-        <label class="label">Confirm New Password</label>
-        <input id="confirmPassword" type="password" class="input" autocomplete="new-password" placeholder="Repeat new password" />
-        <div class="row">
-          <button id="changePasswordBtn" class="btn btn-secondary" disabled>Change Password</button>
-          <button id="clearPasswordBtn" class="btn btn-secondary" type="button">Clear</button>
-        </div>
-        <div id="changePasswordStatus" class="notice notice-info">Log in first to change your password.</div>
-      </section>
     </div>
 
     <div style="height:18px"></div>
@@ -97,12 +79,6 @@
     const attendancePanel = document.getElementById("attendancePanel");
     const performancePanel = document.getElementById("performancePanel");
     const mockExamList = document.getElementById("mockExamList");
-    const currentPasswordEl = document.getElementById("currentPassword");
-    const newPasswordEl = document.getElementById("newPassword");
-    const confirmPasswordEl = document.getElementById("confirmPassword");
-    const changePasswordBtn = document.getElementById("changePasswordBtn");
-    const clearPasswordBtn = document.getElementById("clearPasswordBtn");
-    const changePasswordStatus = document.getElementById("changePasswordStatus");
 
     function updateClock(){ nowEl.textContent = new Date().toLocaleString(); }
     setInterval(updateClock, 1000); updateClock();
@@ -112,23 +88,10 @@
       if (s?.user) {
         whoami.textContent = `${s.user.full_name} (${s.user.email})`;
         sessionState.textContent = "active";
-        changePasswordBtn.disabled = false;
-        changePasswordStatus.className = "notice notice-info";
-        changePasswordStatus.textContent = "You may change your password here.";
       } else {
         whoami.textContent = "Not logged in";
         sessionState.textContent = "none";
-        changePasswordBtn.disabled = true;
-        clearPasswordFields();
-        changePasswordStatus.className = "notice notice-info";
-        changePasswordStatus.textContent = "Log in first to change your password.";
       }
-    }
-
-    function clearPasswordFields() {
-      currentPasswordEl.value = "";
-      newPasswordEl.value = "";
-      confirmPasswordEl.value = "";
     }
 
     function lessonCard(lesson) {
@@ -238,54 +201,6 @@
       loginStatus.className = "notice notice-info";
       loginStatus.textContent = "Logged out.";
       renderHome();
-    };
-
-    clearPasswordBtn.onclick = () => {
-      clearPasswordFields();
-      changePasswordStatus.className = "notice notice-info";
-      changePasswordStatus.textContent = getSession()?.token ? "Password fields cleared." : "Log in first to change your password.";
-    };
-
-    changePasswordBtn.onclick = async () => {
-      const currentPassword = currentPasswordEl.value;
-      const newPassword = newPasswordEl.value;
-      const confirmPassword = confirmPasswordEl.value;
-
-      if (!getSession()?.token) {
-        changePasswordStatus.className = "notice notice-error";
-        changePasswordStatus.textContent = "You must be logged in to change your password.";
-        return;
-      }
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        changePasswordStatus.className = "notice notice-error";
-        changePasswordStatus.textContent = "Enter current password, new password, and confirmation.";
-        return;
-      }
-      if (newPassword.length < 8) {
-        changePasswordStatus.className = "notice notice-error";
-        changePasswordStatus.textContent = "New password must be at least 8 characters.";
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        changePasswordStatus.className = "notice notice-error";
-        changePasswordStatus.textContent = "New password and confirmation do not match.";
-        return;
-      }
-
-      try {
-        changePasswordBtn.disabled = true;
-        changePasswordStatus.className = "notice notice-info";
-        changePasswordStatus.textContent = "Changing password...";
-        const result = await changePassword(currentPassword, newPassword, confirmPassword);
-        clearPasswordFields();
-        changePasswordStatus.className = "notice notice-success";
-        changePasswordStatus.textContent = result.message || "Password changed successfully.";
-      } catch (err) {
-        changePasswordStatus.className = "notice notice-error";
-        changePasswordStatus.textContent = err.message || String(err);
-      } finally {
-        changePasswordBtn.disabled = !getSession()?.token;
-      }
     };
 
     renderHome();

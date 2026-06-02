@@ -25,6 +25,3 @@ body { margin:0; font-family:Arial,sans-serif; background:var(--bg); color:var(-
 .question { border:1px solid var(--border); border-radius:14px; padding:14px; margin:12px 0; background:#fcfdff; }
 .countdown { font-weight:800; }
 .btn:disabled { opacity:.55; cursor:not-allowed; }
-
-#changePasswordCard .input { margin-bottom:0; }
-#changePasswordStatus { min-height:44px; }

@@ -14,11 +14,10 @@
       <div class="kv"><strong>Lesson slug:</strong> <span id="lessonSlugView"></span></div>
       <div class="row">
         <button id="startBtn" class="btn btn-primary">Start Mock Exam</button>
-        <button id="autosaveBtn" class="btn btn-secondary" disabled>Save Progress</button>
+        <button id="autosaveBtn" class="btn btn-secondary" disabled>Autosave</button>
         <button id="submitBtn" class="btn btn-success" disabled>Submit</button>
       </div>
       <div id="status" class="notice notice-info">Start the mock exam from here.</div>
-      <div id="saveStatus" class="notice notice-info">Save status: not saved yet.</div>
     </div>
     <div id="paper"></div>
     <div id="results"></div>
@@ -31,66 +30,10 @@
     const autosaveBtn = document.getElementById("autosaveBtn");
     const submitBtn = document.getElementById("submitBtn");
     const statusEl = document.getElementById("status");
-    const saveStatusEl = document.getElementById("saveStatus");
     const paperEl = document.getElementById("paper");
     const resultsEl = document.getElementById("results");
     let attempt = null;
     let paper = null;
-    let saveTimer = null;
-    let isSaving = false;
-    let submitted = false;
-    let lastSavedPayload = "";
-
-
-    function setSaveStatus(message, kind = "info") {
-      saveStatusEl.className = `notice notice-${kind}`;
-      saveStatusEl.textContent = `Save status: ${message}`;
-    }
-
-    function disableExamControls() {
-      startBtn.disabled = true;
-      autosaveBtn.disabled = true;
-      submitBtn.disabled = true;
-      Array.from(paperEl.querySelectorAll("input, textarea, select, button")).forEach((el) => {
-        el.disabled = true;
-      });
-    }
-
-    function attachAutosaveHandlers() {
-      Array.from(paperEl.querySelectorAll("input, textarea, select")).forEach((el) => {
-        el.addEventListener("input", scheduleAutoSave);
-        el.addEventListener("change", scheduleAutoSave);
-      });
-    }
-
-    function scheduleAutoSave() {
-      if (!attempt || submitted) return;
-      setSaveStatus("unsaved changes; saving automatically...", "info");
-      if (saveTimer) clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => saveProgress(false), 1000);
-    }
-
-    async function saveProgress(manual = true) {
-      if (!attempt || submitted) return;
-      const responses = collectResponses();
-      const payload = JSON.stringify(responses);
-      if (!manual && payload === lastSavedPayload) return;
-      if (isSaving) return;
-      isSaving = true;
-      autosaveBtn.disabled = true;
-      setSaveStatus("saving...", "info");
-      try {
-        await autosavePortalMock(attempt.attempt_id, responses);
-        lastSavedPayload = payload;
-        const mode = manual ? "manual" : "automatic";
-        setSaveStatus(`saved at ${new Date().toLocaleTimeString()} (${mode})`, "success");
-      } catch (err) {
-        setSaveStatus(`save failed: ${err.message || String(err)}`, "error");
-      } finally {
-        isSaving = false;
-        if (!submitted) autosaveBtn.disabled = false;
-      }
-    }
 
     function renderQuestion(item) {
       const div = document.createElement("div");
@@ -154,13 +97,10 @@
         paper = await fetchPortalMockPaper(attempt.attempt_id);
         paperEl.innerHTML = "";
         (paper.items || []).forEach((item) => paperEl.appendChild(renderQuestion(item)));
-        startBtn.disabled = true;
         autosaveBtn.disabled = false;
         submitBtn.disabled = false;
-        attachAutosaveHandlers();
-        setSaveStatus("not saved yet; changes will save automatically", "info");
         statusEl.className = "notice notice-success";
-        statusEl.textContent = "Mock exam loaded.";
+        statusEl.textContent = "Mock exam started.";
       } catch (err) {
         statusEl.className = "notice notice-error";
         statusEl.textContent = err.message || String(err);
@@ -168,35 +108,27 @@
     };
 
     autosaveBtn.onclick = async () => {
-      if (saveTimer) clearTimeout(saveTimer);
-      await saveProgress(true);
+      try {
+        await autosavePortalMock(attempt.attempt_id, collectResponses());
+        statusEl.className = "notice notice-info";
+        statusEl.textContent = "Autosaved.";
+      } catch (err) {
+        statusEl.className = "notice notice-error";
+        statusEl.textContent = err.message || String(err);
+      }
     };
 
     submitBtn.onclick = async () => {
       try {
-        if (saveTimer) clearTimeout(saveTimer);
-        startBtn.disabled = true;
-        autosaveBtn.disabled = true;
-        submitBtn.disabled = true;
-        setSaveStatus("submitting final answers...", "info");
         await autosavePortalMock(attempt.attempt_id, collectResponses());
-        lastSavedPayload = JSON.stringify(collectResponses());
         await submitPortalMock(attempt.attempt_id, { lesson: lessonSlug, submitted_from: "portal", submitted_at: new Date().toISOString(), done: true });
-        submitted = true;
-        disableExamControls();
-        setSaveStatus(`submitted at ${new Date().toLocaleTimeString()}; final answers are locked`, "success");
         const result = await resultsPortalMock(attempt.attempt_id);
         renderResults(result);
         statusEl.className = "notice notice-success";
-        statusEl.textContent = "Submitted. All controls are now disabled.";
+        statusEl.textContent = "Submitted.";
       } catch (err) {
-        if (!submitted) {
-          autosaveBtn.disabled = false;
-          submitBtn.disabled = false;
-        }
         statusEl.className = "notice notice-error";
         statusEl.textContent = err.message || String(err);
-        setSaveStatus(`submit failed: ${err.message || String(err)}`, "error");
       }
     };
   </script>

@@ -20,19 +20,6 @@ async function api(path, options = {}) {
   return res.json();
 }
 
-
-async function changePassword(currentPassword, newPassword, confirmPassword) {
-  return api("/api/auth/change-password", {
-    method:"POST",
-    headers:authHeaders(),
-    body:JSON.stringify({
-      current_password: currentPassword,
-      new_password: newPassword,
-      confirm_password: confirmPassword
-    })
-  });
-}
-
 async function login(email, password) {
   const tokenData = await api("/api/auth/login", {
     method:"POST",
