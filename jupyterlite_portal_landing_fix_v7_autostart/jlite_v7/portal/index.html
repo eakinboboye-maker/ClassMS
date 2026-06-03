@@ -276,7 +276,18 @@
         changePasswordBtn.disabled = true;
         changePasswordStatus.className = "notice notice-info";
         changePasswordStatus.textContent = "Changing password...";
-        const result = await changePassword(currentPassword, newPassword, confirmPassword);
+        const changePasswordFn = window.changePassword || async function(currentPassword, newPassword, confirmPassword) {
+          return api("/api/auth/change-password", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({
+              current_password: currentPassword,
+              new_password: newPassword,
+              confirm_password: confirmPassword
+            })
+          });
+        };
+        const result = await changePasswordFn(currentPassword, newPassword, confirmPassword);
         clearPasswordFields();
         changePasswordStatus.className = "notice notice-success";
         changePasswordStatus.textContent = result.message || "Password changed successfully.";

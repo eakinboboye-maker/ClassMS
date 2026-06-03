@@ -33,6 +33,10 @@ async function changePassword(currentPassword, newPassword, confirmPassword) {
   });
 }
 
+// Make the helper explicit on window so inline portal pages and older cached
+// scripts do not fail with "changePassword is not defined".
+window.changePassword = changePassword;
+
 async function login(email, password) {
   const tokenData = await api("/api/auth/login", {
     method:"POST",
