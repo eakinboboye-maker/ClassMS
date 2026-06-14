@@ -3,7 +3,6 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 
 from app.api.deps import get_db, get_current_user, require_role
 from app.models.user import User
@@ -72,111 +71,6 @@ def _serialize_config(row: LessonLaunchConfig) -> dict:
         "allow_portal_mock_exam": row.allow_portal_mock_exam,
         "is_active": row.is_active,
     }
-
-
-TEACHER_PORTAL_ROLES = {"admin", "instructor", "teacher", "superadmin"}
-ACTIVE_ENROLLMENT_STATUSES = ("active", "enrolled", "registered")
-
-
-def _is_teacher_or_admin(user: User) -> bool:
-    return (getattr(user, "role", "") or "").lower() in TEACHER_PORTAL_ROLES
-
-
-def _student_visible_lesson_slugs(db: Session, user_id: int) -> set[str]:
-    """
-    Return lesson slugs visible to a student through active enrollment.
-
-    This deliberately uses table names directly so this patch can live inside
-    jupyterlite_portal.py without needing to know whether your ORM models live
-    in app.models.course, app.models.section, app.models.enrollment, etc.
-    """
-    sql = text("""
-        SELECT DISTINCT llc.lesson_slug
-        FROM lesson_launch_configs llc
-        JOIN courses c ON c.code = llc.course_code
-        JOIN sections s ON s.course_id = c.id
-        JOIN enrollments e ON e.section_id = s.id
-        WHERE e.user_id = :user_id
-          AND lower(coalesce(e.status, '')) IN ('active', 'enrolled', 'registered')
-          AND coalesce(llc.is_active, false) = true
-          AND coalesce(llc.show_on_portal, false) = true
-    """)
-    return set(db.execute(sql, {"user_id": user_id}).scalars().all())
-
-
-def _visible_lesson_configs_query(db: Session, current_user: User):
-    base = db.query(LessonLaunchConfig).filter(
-        LessonLaunchConfig.is_active.is_(True),
-        LessonLaunchConfig.show_on_portal.is_(True),
-    )
-
-    if _is_teacher_or_admin(current_user):
-        return base.order_by(LessonLaunchConfig.course_code.asc(), LessonLaunchConfig.lesson_slug.asc())
-
-    visible_slugs = _student_visible_lesson_slugs(db, current_user.id)
-    if not visible_slugs:
-        return base.filter(False)
-
-    return base.filter(
-        LessonLaunchConfig.lesson_slug.in_(visible_slugs)
-    ).order_by(LessonLaunchConfig.course_code.asc(), LessonLaunchConfig.lesson_slug.asc())
-
-
-def _require_visible_lesson_config(
-    db: Session,
-    current_user: User,
-    lesson_slug: str,
-    *,
-    require_mock_exam: bool = False,
-) -> LessonLaunchConfig:
-    query = db.query(LessonLaunchConfig).filter(
-        LessonLaunchConfig.lesson_slug == lesson_slug,
-        LessonLaunchConfig.is_active.is_(True),
-        LessonLaunchConfig.show_on_portal.is_(True),
-    )
-    if require_mock_exam:
-        query = query.filter(LessonLaunchConfig.allow_portal_mock_exam.is_(True))
-
-    row = query.first()
-    if not row:
-        raise HTTPException(status_code=404, detail="Lesson not available on portal")
-
-    if _is_teacher_or_admin(current_user):
-        return row
-
-    visible_slugs = _student_visible_lesson_slugs(db, current_user.id)
-    if row.lesson_slug not in visible_slugs:
-        raise HTTPException(status_code=403, detail="You are not enrolled for this course")
-
-    return row
-
-
-def _require_attempt_owner_and_visible_lesson(
-    db: Session,
-    current_user: User,
-    attempt_id: int,
-) -> Attempt:
-    attempt = db.get(Attempt, attempt_id)
-    if not attempt:
-        raise HTTPException(status_code=404, detail="Attempt not found")
-
-    if attempt.user_id != current_user.id and not _is_teacher_or_admin(current_user):
-        raise HTTPException(status_code=403, detail="This attempt does not belong to you")
-
-    if _is_teacher_or_admin(current_user):
-        return attempt
-
-    visible_slugs = _student_visible_lesson_slugs(db, current_user.id)
-    visible_assessment = db.query(LessonLaunchConfig).filter(
-        LessonLaunchConfig.assessment_id == attempt.assessment_id,
-        LessonLaunchConfig.is_active.is_(True),
-        LessonLaunchConfig.show_on_portal.is_(True),
-        LessonLaunchConfig.lesson_slug.in_(visible_slugs),
-    ).first()
-    if not visible_assessment:
-        raise HTTPException(status_code=403, detail="You are not enrolled for this assessment")
-
-    return attempt
 
 
 @router.post("/lesson-config")
@@ -256,7 +150,12 @@ def get_lesson_launch_config(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    row = _require_visible_lesson_config(db, _, lesson_slug)
+    row = db.query(LessonLaunchConfig).filter(
+        LessonLaunchConfig.lesson_slug == lesson_slug,
+        LessonLaunchConfig.is_active.is_(True),
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Lesson config not found")
     return _serialize_config(row)
 
 
@@ -265,7 +164,10 @@ def portal_home(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    rows = _visible_lesson_configs_query(db, current_user).all()
+    rows = db.query(LessonLaunchConfig).filter(
+        LessonLaunchConfig.is_active.is_(True),
+        LessonLaunchConfig.show_on_portal.is_(True),
+    ).order_by(LessonLaunchConfig.lesson_slug.asc()).all()
 
     lessons = []
     mock_exams = []
@@ -287,7 +189,6 @@ def portal_home(
                     "lesson_slug": row.lesson_slug,
                     "title": row.title,
                     "course_code": row.course_code,
-                    "assessment_id": row.assessment_id,
                 }
             )
 
@@ -326,9 +227,15 @@ def portal_home(
 def portal_launch_lesson(
     lesson_slug: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    _: User = Depends(get_current_user),
 ):
-    row = _require_visible_lesson_config(db, current_user, lesson_slug)
+    row = db.query(LessonLaunchConfig).filter(
+        LessonLaunchConfig.lesson_slug == lesson_slug,
+        LessonLaunchConfig.is_active.is_(True),
+        LessonLaunchConfig.show_on_portal.is_(True),
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Lesson not available on portal")
     return _serialize_config(row)
 
 
@@ -338,7 +245,12 @@ def get_attendance_window(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    row = _require_visible_lesson_config(db, current_user, lesson_slug)
+    row = db.query(LessonLaunchConfig).filter(
+        LessonLaunchConfig.lesson_slug == lesson_slug,
+        LessonLaunchConfig.is_active.is_(True),
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Lesson config not found")
 
     attendance = _attendance_status_for_user(db, row, current_user.id)
     if not attendance:
@@ -351,8 +263,11 @@ def mark_attendance_for_lesson(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    row = _require_visible_lesson_config(db, current_user, lesson_slug)
-    if not row.attendance_session_id:
+    row = db.query(LessonLaunchConfig).filter(
+        LessonLaunchConfig.lesson_slug == lesson_slug,
+        LessonLaunchConfig.is_active.is_(True),
+    ).first()
+    if not row or not row.attendance_session_id:
         raise HTTPException(status_code=404, detail="Attendance not configured for lesson")
 
     attendance = _attendance_status_for_user(db, row, current_user.id)
@@ -409,12 +324,13 @@ def portal_start_mock_exam(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    row = _require_visible_lesson_config(
-        db,
-        current_user,
-        lesson_slug,
-        require_mock_exam=True,
-    )
+    row = db.query(LessonLaunchConfig).filter(
+        LessonLaunchConfig.lesson_slug == lesson_slug,
+        LessonLaunchConfig.is_active.is_(True),
+        LessonLaunchConfig.allow_portal_mock_exam.is_(True),
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Portal mock exam not found")
 
     assessment = db.get(Assessment, row.assessment_id)
     if not assessment:
@@ -457,7 +373,9 @@ def portal_mock_exam_paper(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    attempt = _require_attempt_owner_and_visible_lesson(db, current_user, attempt_id)
+    attempt = db.get(Attempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Attempt not found")
 
     from app.api.mock_exams import get_mock_exam_paper
     return get_mock_exam_paper(attempt.assessment_id, db, current_user)
@@ -470,7 +388,9 @@ def portal_mock_exam_autosave(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    attempt = _require_attempt_owner_and_visible_lesson(db, current_user, attempt_id)
+    attempt = db.get(Attempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Attempt not found")
 
     for item in payload.get("responses", []):
         save_response(db, attempt_id, item["question_id"], item["response"], is_final=False)
@@ -484,7 +404,9 @@ def portal_mock_exam_submit(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    attempt = _require_attempt_owner_and_visible_lesson(db, current_user, attempt_id)
+    attempt = db.get(Attempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Attempt not found")
 
     finalize_attempt(db, attempt, payload.get("submitted_payload", {}))
     return {"status": "submitted"}
@@ -496,7 +418,9 @@ def portal_mock_exam_results(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    attempt = _require_attempt_owner_and_visible_lesson(db, current_user, attempt_id)
+    attempt = db.get(Attempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Attempt not found")
 
     from app.api.mock_exams import get_mock_exam_results
     return get_mock_exam_results(attempt_id, db, current_user)
