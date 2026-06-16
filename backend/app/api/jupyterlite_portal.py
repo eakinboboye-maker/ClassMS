@@ -500,3 +500,39 @@ def portal_mock_exam_results(
 
     from app.api.mock_exams import get_mock_exam_results
     return get_mock_exam_results(attempt_id, db, current_user)
+    
+    
+@router.get("/lesson-configs")
+def list_lesson_launch_configs(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("admin", "instructor")),
+):
+    rows = (
+        db.query(LessonLaunchConfig)
+        .order_by(LessonLaunchConfig.course_code.asc(), LessonLaunchConfig.lesson_slug.asc())
+        .all()
+    )
+    return {"items": [_serialize_config(row) for row in rows]}
+
+
+@router.delete("/lesson-config/{lesson_slug}")
+def delete_lesson_launch_config(
+    lesson_slug: str,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("admin", "instructor")),
+):
+    row = (
+        db.query(LessonLaunchConfig)
+        .filter(LessonLaunchConfig.lesson_slug == lesson_slug)
+        .first()
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Lesson config not found")
+
+    db.delete(row)
+    db.commit()
+    return {
+        "status": "deleted",
+        "lesson_slug": lesson_slug,
+        "message": "Lesson launch config deleted. Course, assessment, notebook, questions, attempts, and scores were not deleted.",
+    }

@@ -15,6 +15,11 @@ export type LessonConfigPayload = {
   is_active: boolean;
 };
 
+export type LessonConfigRow = LessonConfigPayload & {
+  attendance_open_at?: string | null;
+  attendance_close_at?: string | null;
+};
+
 export async function createLessonConfig(payload: LessonConfigPayload) {
   return apiFetch("/api/jupyterlite/lesson-config", {
     method: "POST",
@@ -32,6 +37,18 @@ export async function updateLessonConfig(lessonSlug: string, payload: Partial<Le
 export async function getLessonConfig(lessonSlug: string) {
   return apiFetch(`/api/jupyterlite/lesson-config/${encodeURIComponent(lessonSlug)}`, {
     method: "GET",
+  });
+}
+
+export async function listLessonConfigs() {
+  return apiFetch("/api/jupyterlite/lesson-configs", {
+    method: "GET",
+  });
+}
+
+export async function deleteLessonConfig(lessonSlug: string) {
+  return apiFetch(`/api/jupyterlite/lesson-config/${encodeURIComponent(lessonSlug)}`, {
+    method: "DELETE",
   });
 }
 

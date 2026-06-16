@@ -6,8 +6,11 @@ import { listCourses } from "../../lib/courses-api";
 import {
   createLessonConfig,
   createOrUpdateLessonConfig,
+  deleteLessonConfig,
   getLessonConfig,
+  listLessonConfigs,
   type LessonConfigPayload,
+  type LessonConfigRow,
   updateLessonConfig,
 } from "../../lib/jupyterlite-api";
 
@@ -52,11 +55,22 @@ function parseOptionalNumber(value: string, label: string) {
   return parsed;
 }
 
+function asLessonRows(payload: any): LessonConfigRow[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.lesson_configs)) return payload.lesson_configs;
+  if (Array.isArray(payload?.configs)) return payload.configs;
+  return [];
+}
+
 export default function LessonConfigsPage() {
   const [status, setStatus] = useState("");
   const [courses, setCourses] = useState<CourseRow[]>([]);
+  const [lessonConfigs, setLessonConfigs] = useState<LessonConfigRow[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
+  const [loadingConfigs, setLoadingConfigs] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [lessonSlug, setLessonSlug] = useState("week01_intro");
   const [courseCode, setCourseCode] = useState("EEE355");
@@ -79,6 +93,7 @@ export default function LessonConfigsPage() {
       return;
     }
     refreshCourses();
+    refreshLessonConfigs();
   }, []);
 
   const selectedCourse = useMemo(
@@ -101,6 +116,23 @@ export default function LessonConfigsPage() {
       setStatus(err.message || "Failed to load courses");
     } finally {
       setLoadingCourses(false);
+    }
+  }
+
+  async function refreshLessonConfigs() {
+    try {
+      setLoadingConfigs(true);
+      const payload = await listLessonConfigs();
+      const rows = asLessonRows(payload);
+      setLessonConfigs(rows);
+      setStatus(`Loaded ${rows.length} lesson config(s).`);
+    } catch (err: any) {
+      setLessonConfigs([]);
+      setStatus(
+        `Could not list lesson configs. You can still load by slug. Backend may need GET /api/jupyterlite/lesson-configs. ${err.message || err}`
+      );
+    } finally {
+      setLoadingConfigs(false);
     }
   }
 
@@ -143,13 +175,29 @@ export default function LessonConfigsPage() {
     };
   }
 
+  function applyLessonConfig(row: any) {
+    setLastResponse(row);
+    setLessonSlug(row.lesson_slug || "");
+    setCourseCode(row.course_code || "");
+    setTitle(row.title || "");
+    setAssessmentId(row.assessment_id == null ? "" : String(row.assessment_id));
+    setAttendanceSessionId(row.attendance_session_id == null ? "" : String(row.attendance_session_id));
+    setQuestionKeysJson(JSON.stringify(row.question_keys || {}, null, 2));
+    setNotebookPath(row.notebook_path || "");
+    setAttendanceOpenAt(fromApiDateTime(row.attendance_open_at));
+    setAttendanceCloseAt(fromApiDateTime(row.attendance_close_at));
+    setShowOnPortal(Boolean(row.show_on_portal));
+    setAllowPortalMockExam(Boolean(row.allow_portal_mock_exam));
+    setIsActive(Boolean(row.is_active));
+  }
+
   async function handleCreate() {
     try {
       setSaving(true);
       const payload = buildPayload();
       const response = await createLessonConfig(payload);
-      setLastResponse(response);
-      setLessonSlug(payload.lesson_slug);
+      applyLessonConfig(response);
+      await refreshLessonConfigs();
       setStatus(`Created lesson config: ${payload.lesson_slug}`);
     } catch (err: any) {
       setStatus(err.message || "Failed to create lesson config");
@@ -163,8 +211,8 @@ export default function LessonConfigsPage() {
       setSaving(true);
       const payload = buildPayload();
       const response = await updateLessonConfig(payload.lesson_slug, payload);
-      setLastResponse(response);
-      setLessonSlug(payload.lesson_slug);
+      applyLessonConfig(response);
+      await refreshLessonConfigs();
       setStatus(`Updated lesson config: ${payload.lesson_slug}`);
     } catch (err: any) {
       setStatus(err.message || "Failed to update lesson config");
@@ -178,8 +226,8 @@ export default function LessonConfigsPage() {
       setSaving(true);
       const payload = buildPayload();
       const response = await createOrUpdateLessonConfig(payload);
-      setLastResponse(response);
-      setLessonSlug(payload.lesson_slug);
+      applyLessonConfig(response);
+      await refreshLessonConfigs();
       setStatus(`Saved lesson config: ${payload.lesson_slug}`);
     } catch (err: any) {
       setStatus(err.message || "Failed to save lesson config");
@@ -188,29 +236,47 @@ export default function LessonConfigsPage() {
     }
   }
 
-  async function handleLoadBySlug() {
+  async function handleLoadBySlug(slugFromRow?: string) {
     try {
-      if (!lessonSlug.trim()) throw new Error("Enter a lesson slug first.");
+      const slug = normalizeSlug(slugFromRow || lessonSlug);
+      if (!slug) throw new Error("Enter a lesson slug first.");
       setSaving(true);
-      const row = await getLessonConfig(normalizeSlug(lessonSlug));
-      setLastResponse(row);
-      setLessonSlug(row.lesson_slug || lessonSlug);
-      setCourseCode(row.course_code || "");
-      setTitle(row.title || "");
-      setAssessmentId(row.assessment_id == null ? "" : String(row.assessment_id));
-      setAttendanceSessionId(row.attendance_session_id == null ? "" : String(row.attendance_session_id));
-      setQuestionKeysJson(JSON.stringify(row.question_keys || {}, null, 2));
-      setNotebookPath(row.notebook_path || "");
-      setAttendanceOpenAt(fromApiDateTime(row.attendance_open_at));
-      setAttendanceCloseAt(fromApiDateTime(row.attendance_close_at));
-      setShowOnPortal(Boolean(row.show_on_portal));
-      setAllowPortalMockExam(Boolean(row.allow_portal_mock_exam));
-      setIsActive(Boolean(row.is_active));
+      const row = await getLessonConfig(slug);
+      applyLessonConfig(row);
       setStatus(`Loaded lesson config: ${row.lesson_slug}`);
     } catch (err: any) {
       setStatus(err.message || "Failed to load lesson config");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete(slugInput?: string) {
+    const slug = normalizeSlug(slugInput || lessonSlug);
+    if (!slug) {
+      setStatus("Enter or load a lesson slug before deleting.");
+      return;
+    }
+    const confirmed = window.confirm(
+      `Delete lesson launch config "${slug}"?\n\nThis removes the portal launch record only. It does not delete the course, assessment, notebook, questions, attempts, or scores.`
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      const response = await deleteLessonConfig(slug);
+      setLastResponse(response);
+      if (normalizeSlug(lessonSlug) === slug) {
+        setLessonSlug("");
+      }
+      await refreshLessonConfigs();
+      setStatus(`Deleted lesson config: ${slug}`);
+    } catch (err: any) {
+      setStatus(
+        `Failed to delete lesson config. Backend may need DELETE /api/jupyterlite/lesson-config/{lesson_slug}. ${err.message || err}`
+      );
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -223,11 +289,13 @@ export default function LessonConfigsPage() {
     setNotebookPath(`${code}/week01_intro.ipynb`);
   }
 
+  const busy = saving || deleting;
+
   return (
     <main>
       <h1 className="page-title">JupyterLite Lesson Configs</h1>
       <p className="page-subtitle">
-        Create the portal launch record that makes a notebook lesson visible to enrolled students.
+        Create, load, update, and delete the portal launch records that make notebook lessons visible to enrolled students.
       </p>
 
       <section className="card card-accent">
@@ -235,6 +303,73 @@ export default function LessonConfigsPage() {
         <div className="notice notice-info">
           {status || "Signed-in admin/instructor token will be used automatically."}
         </div>
+      </section>
+
+      <section className="card">
+        <h2 className="card-title">Existing Lesson Configs</h2>
+        <div className="button-row">
+          <button className="btn btn-secondary" onClick={refreshLessonConfigs} disabled={loadingConfigs}>
+            Refresh Lesson Configs
+          </button>
+          <button className="btn btn-secondary" onClick={() => handleLoadBySlug()} disabled={busy || !lessonSlug}>
+            Load Current Slug
+          </button>
+          <button className="btn btn-danger" onClick={() => handleDelete()} disabled={busy || !lessonSlug}>
+            Delete Current Slug
+          </button>
+        </div>
+        {lessonConfigs.length ? (
+          <div className="table-wrap spacer-12">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Slug</th>
+                  <th>Course</th>
+                  <th>Title</th>
+                  <th>Assessment</th>
+                  <th>Visible</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lessonConfigs.map((row) => (
+                  <tr key={row.lesson_slug}>
+                    <td><code>{row.lesson_slug}</code></td>
+                    <td>{row.course_code}</td>
+                    <td>{row.title}</td>
+                    <td>{row.assessment_id ?? "—"}</td>
+                    <td>
+                      {row.show_on_portal && row.is_active ? (
+                        <span className="badge badge-success">Portal</span>
+                      ) : (
+                        <span className="badge">Hidden</span>
+                      )}
+                      {row.allow_portal_mock_exam ? <span className="badge">Mock</span> : null}
+                    </td>
+                    <td>
+                      <div className="button-row table-actions">
+                        <button className="btn btn-secondary btn-small" onClick={() => handleLoadBySlug(row.lesson_slug)} disabled={busy}>
+                          Load
+                        </button>
+                        <button
+                          className="btn btn-danger btn-small"
+                          onClick={() => handleDelete(row.lesson_slug)}
+                          disabled={busy}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="notice notice-info">
+            No lesson configs loaded yet. Click Refresh Lesson Configs, or use Load Current Slug if the backend does not have a list route yet.
+          </div>
+        )}
       </section>
 
       <div className="grid-2">
@@ -393,17 +528,20 @@ export default function LessonConfigsPage() {
         </div>
 
         <div className="button-row">
-          <button className="btn btn-primary" onClick={handleCreate} disabled={saving || !lessonSlug || !courseCode || !title || !notebookPath}>
+          <button className="btn btn-primary" onClick={handleCreate} disabled={busy || !lessonSlug || !courseCode || !title || !notebookPath}>
             Create Lesson Config
           </button>
-          <button className="btn btn-success" onClick={handleCreateOrUpdate} disabled={saving || !lessonSlug || !courseCode || !title || !notebookPath}>
+          <button className="btn btn-success" onClick={handleCreateOrUpdate} disabled={busy || !lessonSlug || !courseCode || !title || !notebookPath}>
             Create or Update
           </button>
-          <button className="btn btn-secondary" onClick={handleUpdate} disabled={saving || !lessonSlug}>
+          <button className="btn btn-secondary" onClick={handleUpdate} disabled={busy || !lessonSlug}>
             Update Existing
           </button>
-          <button className="btn btn-secondary" onClick={handleLoadBySlug} disabled={saving || !lessonSlug}>
+          <button className="btn btn-secondary" onClick={() => handleLoadBySlug()} disabled={busy || !lessonSlug}>
             Load by Slug
+          </button>
+          <button className="btn btn-danger" onClick={() => handleDelete()} disabled={busy || !lessonSlug}>
+            Delete
           </button>
         </div>
       </section>
