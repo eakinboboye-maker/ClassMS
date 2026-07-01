@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-06-25T03:25:30.304302Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "1979-12-31T23:00:00Z",
+      "mimetype": null,
+      "name": "solutions.ipynb",
+      "path": "EEE152/Writing C++ Programs/solutions.ipynb",
+      "size": 18061,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-06-25T03:25:30.300302Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "1979-12-31T23:00:00Z",
+      "mimetype": null,
+      "name": "exercises.ipynb",
+      "path": "EEE152/Writing C++ Programs/exercises.ipynb",
+      "size": 16373,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-06-25T03:25:30.304302Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-06-25T03:25:30.304302Z",
+  "mimetype": null,
+  "name": "Writing C++ Programs",
+  "path": "EEE152/Writing C++ Programs",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}

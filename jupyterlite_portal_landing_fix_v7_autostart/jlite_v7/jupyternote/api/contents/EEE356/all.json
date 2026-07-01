@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-06-25T03:25:30.304302Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-06-01T06:20:58Z",
+      "mimetype": null,
+      "name": "week01_isa.ipynb",
+      "path": "EEE356/week01_isa.ipynb",
+      "size": 2733,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-06-25T03:25:30.304302Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-06-01T06:20:48Z",
+      "mimetype": "text/x-python",
+      "name": "sitecustomize.py",
+      "path": "EEE356/sitecustomize.py",
+      "size": 318,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2026-06-25T03:25:30.304302Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-06-25T03:25:30.304302Z",
+  "mimetype": null,
+  "name": "EEE356",
+  "path": "EEE356",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
