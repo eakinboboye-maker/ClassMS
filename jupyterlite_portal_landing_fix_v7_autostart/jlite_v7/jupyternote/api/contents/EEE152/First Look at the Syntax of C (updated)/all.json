@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-07-02T06:16:43.114060Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-07-02T04:46:36.396706Z",
+      "mimetype": null,
+      "name": "intro_cpp_exercises_student.ipynb",
+      "path": "EEE152/First Look at the Syntax of C (updated)/intro_cpp_exercises_student.ipynb",
+      "size": 30431,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-07-02T06:16:43.114060Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-07-02T06:16:43.114060Z",
+  "mimetype": null,
+  "name": "First Look at the Syntax of C (updated)",
+  "path": "EEE152/First Look at the Syntax of C (updated)",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
