@@ -7,6 +7,6 @@ dependencies:
   - xeus-cpp
   - ipywidgets
   - requests
-  - matplotlib
-  - pandas
+#  - matplotlib
+#  - pandas
   - anywidget
