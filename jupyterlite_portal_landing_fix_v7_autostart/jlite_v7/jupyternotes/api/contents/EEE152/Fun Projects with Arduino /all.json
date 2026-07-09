@@ -1,0 +1,57 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-07-09T06:37:11.209180Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-07-09T06:37:11.209180Z",
+      "mimetype": null,
+      "name": "img",
+      "path": "EEE152/Fun Projects with Arduino /img",
+      "size": null,
+      "type": "directory",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-07-09T06:37:11.213181Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "1979-12-31T23:00:00Z",
+      "mimetype": null,
+      "name": "solutions.ipynb",
+      "path": "EEE152/Fun Projects with Arduino /solutions.ipynb",
+      "size": 37453,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-07-09T06:37:11.209180Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "1979-12-31T23:00:00Z",
+      "mimetype": null,
+      "name": "exercises.ipynb",
+      "path": "EEE152/Fun Projects with Arduino /exercises.ipynb",
+      "size": 21565,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-07-09T06:37:11.213181Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-07-09T06:37:11.213181Z",
+  "mimetype": null,
+  "name": "Fun Projects with Arduino ",
+  "path": "EEE152/Fun Projects with Arduino ",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}

@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-07-09T06:37:11.213181Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "1979-12-31T23:00:00Z",
+      "mimetype": "image/png",
+      "name": "wokwi.png",
+      "path": "EEE152/Using Simulated Arduino on Wokwi /img/wokwi.png",
+      "size": 64410,
+      "type": "file",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-07-09T06:37:11.213181Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "1979-12-31T23:00:00Z",
+      "mimetype": "image/gif",
+      "name": "blink.gif",
+      "path": "EEE152/Using Simulated Arduino on Wokwi /img/blink.gif",
+      "size": 222209,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2026-07-09T06:37:11.213181Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-07-09T06:37:11.213181Z",
+  "mimetype": null,
+  "name": "img",
+  "path": "EEE152/Using Simulated Arduino on Wokwi /img",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
