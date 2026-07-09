@@ -15,7 +15,7 @@
       },
       {
         "extension": "./extension",
-        "load": "static/remoteEntry.9077b3d2deaffb329dfc.js",
+        "load": "static/remoteEntry.c72939064c854c98a34f.js",
         "name": "@jupyter-widgets/jupyterlab-manager"
       },
       {
@@ -28,6 +28,11 @@
         "load": "static/remoteEntry.f8efd9d66fc63abee277.js",
         "name": "@jupyterlite/xeus-extension",
         "style": "./style"
+      },
+      {
+        "extension": "./extension",
+        "load": "./static/remoteEntry.698dcaf7.js",
+        "name": "anywidget"
       },
       {
         "extension": "./extension",

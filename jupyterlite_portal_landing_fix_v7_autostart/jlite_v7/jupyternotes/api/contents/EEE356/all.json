@@ -2,7 +2,7 @@
   "content": [
     {
       "content": null,
-      "created": "2026-07-09T06:37:11.217180Z",
+      "created": "2026-07-09T06:59:25.252622Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
@@ -16,7 +16,7 @@
     },
     {
       "content": null,
-      "created": "2026-07-09T06:37:11.217180Z",
+      "created": "2026-07-09T06:59:25.252622Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
@@ -29,11 +29,11 @@
       "writable": true
     }
   ],
-  "created": "2026-07-09T06:37:11.217180Z",
+  "created": "2026-07-09T06:59:25.252622Z",
   "format": "json",
   "hash": null,
   "hash_algorithm": null,
-  "last_modified": "2026-07-09T06:37:11.217180Z",
+  "last_modified": "2026-07-09T06:59:25.252622Z",
   "mimetype": null,
   "name": "EEE356",
   "path": "EEE356",
