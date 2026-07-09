@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-07-09T03:58:40.997966Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-07-02T04:11:34Z",
+      "mimetype": null,
+      "name": "cpp_followup2_real_programs_student.ipynb",
+      "path": "EEE152/Writing C++ Programs (updated)/cpp_followup2_real_programs_student.ipynb",
+      "size": 23415,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-07-09T03:58:40.997966Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-07-09T03:58:40.997966Z",
+  "mimetype": null,
+  "name": "Writing C++ Programs (updated)",
+  "path": "EEE152/Writing C++ Programs (updated)",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
