@@ -6,10 +6,9 @@ channels:
   - https://repo.prefix.dev/conda-forge
 dependencies:
   - xeus-cpp
-#  - xeus-python
-#  - xeus-cpp
-#  - ipywidgets
+  - xeus-python
+  - ipywidgets
 #  - requests
 #  - matplotlib
 #  - pandas
-#  - anywidget
+  - anywidget

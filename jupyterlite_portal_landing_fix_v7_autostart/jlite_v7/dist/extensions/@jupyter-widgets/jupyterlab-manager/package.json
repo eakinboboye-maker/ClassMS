@@ -94,7 +94,7 @@
     "outputDir": "labextension",
     "schemaDir": "./schema",
     "_build": {
-      "load": "static/remoteEntry.9077b3d2deaffb329dfc.js",
+      "load": "static/remoteEntry.c72939064c854c98a34f.js",
       "extension": "./extension"
     }
   }
